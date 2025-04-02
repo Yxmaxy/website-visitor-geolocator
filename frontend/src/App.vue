@@ -1,14 +1,14 @@
-<template>
-    <Home />
-</template>
-
-<script lang="ts">
-import Home from "./pages/Home.vue";
-
-export default {
-    name: "App",
-    components: {
-        Home,
-    },
-}
+<script setup lang="ts">
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/app/AppSidebar.vue";
 </script>
+
+<template>
+    <SidebarProvider>
+        <AppSidebar />
+        <main>
+            <SidebarTrigger />
+            <slot />
+        </main>
+    </SidebarProvider>
+</template>
