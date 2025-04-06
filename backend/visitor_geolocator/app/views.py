@@ -1,1 +1,0 @@
-# views for the app - templates and stuff
