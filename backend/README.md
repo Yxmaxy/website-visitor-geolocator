@@ -12,11 +12,15 @@
     ```
     pip install -r requirements.txt
     ```
-3. Create a superuser
+3. Initialize database
+    ```
+    python manage.py migrate
+    ```
+4. Create a superuser
     ```
     python manage.py createsuperuser
     ```
-4. Run the server or install the `visitor_geolocator` package using `pip install -e .`
+5. Run the server or install the `visitor_geolocator` package using `pip install -e .`
     ```
     python manage.py runserver
     ```

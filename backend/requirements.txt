@@ -1,2 +1,6 @@
 Django==4.2.*
 requests==2.32.*
+django-ipware==7.0.*
+
+# linting
+pylint_django==2.6.*

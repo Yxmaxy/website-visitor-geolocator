@@ -1,0 +1,59 @@
+import uuid
+
+from django.conf import settings
+from django.db import models
+from django.contrib.gis.db import models as gis_models
+
+
+class Domain(models.Model):
+    class Meta:
+        db_table = "website_visitor_geolocator_core_domain"
+
+    domain = models.URLField(
+        max_length=255, help_text="The domain of the website to track"
+    )
+    api_key = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        help_text="The API key which is used to authenticate requests",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        help_text="The user who created the domain",
+    )
+
+    geolocation_api_token_ipinfo = models.CharField(
+        max_length=255, help_text="The access token to the IPInfo API"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.domain)
+
+    def save(self, *args, **kwargs):
+        """Removes all paths from the domain"""
+        self.domain = self.domain.split("/")[0] + "//" + self.domain.split("/")[2]
+        super().save(*args, **kwargs)
+
+
+class Visitor(models.Model):
+    class Meta:
+        db_table = "website_visitor_geolocator_core_visitor"
+
+    domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
+
+    ip_address = models.GenericIPAddressField()
+    location = gis_models.PointField(srid=4326)
+
+    location_description = models.CharField(max_length=255)
+    timezone = models.CharField(max_length=255)
+
+    user_agent = models.CharField(max_length=510)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.domain} - {self.created_at}"
