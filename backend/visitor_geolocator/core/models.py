@@ -10,7 +10,8 @@ class Domain(models.Model):
         db_table = "website_visitor_geolocator_core_domain"
 
     domain = models.URLField(
-        max_length=255, help_text="The domain of the website to track"
+        max_length=255,
+        help_text="The domain of the website to track eg. https://www.example.com",
     )
     api_key = models.UUIDField(
         default=uuid.uuid4,
