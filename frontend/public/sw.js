@@ -30,18 +30,21 @@ self.addEventListener("fetch", (event) => {
 
 // Push event - handle incoming push notifications
 self.addEventListener("push", (event) => {
-    console.log("Push event received:", event);
+    if (event.data) {
+        console.log("Event data methods:", Object.getOwnPropertyNames(event.data));
+        console.log("Event data text:", event.data.text ? event.data.text() : "no text method");
+    }
 
     let notificationData = {
-        title: "New Visitor",  // TODO: take text from event
-        body: "A new visitor has been detected on your website",
-        icon: "/static/img/notification-icon.png",
+        title: "New Notification",
+        body: "You have a new notification",
+        icon: "/static/img/notification-icon.png",  // TODO: add icons
         badge: "/static/img/badge-icon.png",
         vibrate: [200, 100, 200],
         data: {}
     };
 
-    // If we have data from the push message, use it
+    // override default data
     if (event.data) {
         try {
             const pushData = event.data.json();
@@ -60,19 +63,19 @@ self.addEventListener("push", (event) => {
         badge: notificationData.badge,
         vibrate: notificationData.vibrate,
         data: notificationData.data,
-        requireInteraction: true,
-        actions: [
-            {
-                action: "view",
-                title: "View Details",
-                icon: "/static/img/view-icon.png"
-            },
-            {
-                action: "dismiss",
-                title: "Dismiss",
-                icon: "/static/img/dismiss-icon.png"
-            }
-        ]
+        // requireInteraction: true,
+        // actions: [
+        //     {
+        //         action: "view",
+        //         title: "View Details",
+        //         icon: "/static/img/view-icon.png"
+        //     },
+        //     {
+        //         action: "dismiss",
+        //         title: "Dismiss",
+        //         icon: "/static/img/dismiss-icon.png"
+        //     }
+        // ]
     };
 
     event.waitUntil(
@@ -81,28 +84,28 @@ self.addEventListener("push", (event) => {
 });
 
 // Notification click event
-self.addEventListener("notificationclick", (event) => {
-    console.log("Notification clicked:", event);
+// self.addEventListener("notificationclick", (event) => {
+//     console.log("Notification clicked:", event);
 
-    event.notification.close();
+//     event.notification.close();
 
-    if (event.action === "view") {
-        // Open the dashboard or specific page
-        event.waitUntil(
-            clients.openWindow("/dashboard")
-        );
-    } else if (event.action === "dismiss") {
-        // Just close the notification
-        event.notification.close();
-    } else {
-        // Default action - open the main page
-        event.waitUntil(
-            clients.openWindow("/")
-        );
-    }
-});
+//     if (event.action === "view") {
+//         // Open the dashboard or specific page
+//         event.waitUntil(
+//             clients.openWindow("/dashboard")
+//         );
+//     } else if (event.action === "dismiss") {
+//         // Just close the notification
+//         event.notification.close();
+//     } else {
+//         // Default action - open the main page
+//         event.waitUntil(
+//             clients.openWindow("/")
+//         );
+//     }
+// });
 
-// Notification close event
-self.addEventListener("notificationclose", (event) => {
-    console.log("Notification closed:", event);
-});
+// // Notification close event
+// self.addEventListener("notificationclose", (event) => {
+//     console.log("Notification closed:", event);
+// });
