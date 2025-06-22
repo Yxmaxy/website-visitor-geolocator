@@ -9,6 +9,8 @@ from visitor_geolocator.core.services import DomainService
 from visitor_geolocator.notifications.services import NotificationService
 from visitor_geolocator.core.models import WebsiteVisitorGeolocatorUser
 
+VISITOR_TRACKING_NAME = "wvg_tracking"
+
 
 @login_required
 @require_http_methods(["GET"])
@@ -28,24 +30,29 @@ def tracking_script(request: HttpRequest):
 
     script_content = f"""
     (async function() {{
-        // Check if cookie exists
-        function getCookie(name) {{
-            const value = '; ' + document.cookie;
-            const parts = value.split('; ' + name + '=');
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
-        }}
-
-        if (getCookie('_wvg_tracking')) {{
-            return;
-        }}
-
         const endpoint = "{host}{endpoint}";
         const apiKey = "{api_key}";
-        
         if (!apiKey) {{
             console.error("Website Visitor Geolocator: API key is required");
             return;
+        }}
+
+        function storeTrackingData() {{
+            const expires = new Date();
+            expires.setTime(expires.getTime() + ({settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOKIE_EXPIRATION} * 1000));
+            localStorage.setItem("{VISITOR_TRACKING_NAME}", expires.getTime());
+        }}
+
+        const trackingData = localStorage.getItem("{VISITOR_TRACKING_NAME}");
+        if (trackingData) {{
+            try {{
+                const expires = parseInt(trackingData);
+                const now = new Date().getTime();
+                if (expires && expires > now) {{
+                    storeTrackingData();
+                    return;
+                }}
+            }} catch (e) {{}}
         }}
 
         try {{
@@ -55,12 +62,9 @@ def tracking_script(request: HttpRequest):
                     "X-Access-Token": apiKey
                 }}
             }});
-            
+
             if (response.ok) {{
-                // Set cookie that expires in 10 hours
-                const expires = new Date();
-                expires.setTime(expires.getTime() + (10 * 60 * 60 * 1000));
-                document.cookie = '_wvg_tracking=true; expires=' + expires.toUTCString() + '; path=/';
+                storeTrackingData();
             }}
         }} catch (error) {{
             console.error("Website Visitor Geolocator:", error);
@@ -76,10 +80,6 @@ def tracking_script(request: HttpRequest):
 def visitor(request: HttpRequest):
     """Creates a visitor record based on the request."""
 
-    # TODO: add ip to cache - don't process on every request
-    # refresh cookie on every request
-
-    # handle CORS preflight request
     if request.method == "OPTIONS":
         return HttpResponse(status=200)
 
