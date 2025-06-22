@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from visitor_geolocator.core.models import Domain, Visitor
+from visitor_geolocator.core.models import Domain, Visitor, WebsiteVisitorGeolocatorUser
 
 
 @admin.register(Domain)
@@ -15,3 +15,10 @@ class VisitorAdmin(admin.ModelAdmin):
     list_display = ("ip_address", "domain", "created_at")
     search_fields = ("ip_address", "domain")
     list_filter = ("created_at",)
+
+
+@admin.register(WebsiteVisitorGeolocatorUser)
+class WebsiteVisitorGeolocatorUserAdmin(admin.ModelAdmin):
+    list_display = ("user",)
+    search_fields = ("user__email",)
+    list_filter = ("user__email",)

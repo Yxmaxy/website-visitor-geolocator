@@ -2,8 +2,8 @@ from typing import Optional
 from ipware import get_client_ip
 import requests
 
-from django.http.request import HttpRequest
 from django.core.cache import cache
+from django.http.request import HttpRequest
 from django.contrib.gis.geos import Point
 
 from visitor_geolocator.core.models import Domain, Visitor
@@ -32,8 +32,10 @@ class DomainService:
         return domain
 
     @staticmethod
-    def save_domain_visitor(domain: Domain, request: HttpRequest) -> bool:
-        ip_address, _ = "46.122.98.238", None  # get_client_ip(request)
+    def save_domain_visitor(
+        domain: Domain, request: HttpRequest
+    ) -> tuple[Visitor, bool]:
+        ip_address, _ = get_client_ip(request)
 
         visitor = GeolocationService.get_visitor_ipinfo(
             ip_address, domain.geolocation_api_token_ipinfo
@@ -41,14 +43,14 @@ class DomainService:
         if not visitor:
             visitor = GeolocationService.get_visitor_ipapi(ip_address)
             if not visitor:
-                return False
+                return None, False
 
         # add request data
         visitor.domain = domain
         visitor.user_agent = request.META.get("HTTP_USER_AGENT")
 
         visitor.save()
-        return True
+        return visitor, True
 
 
 class GeolocationService:

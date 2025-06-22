@@ -3,6 +3,28 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.contrib.gis.db import models as gis_models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class WebsiteVisitorGeolocatorUser(models.Model):
+    class Meta:
+        db_table = "website_visitor_geolocator_core_user"
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="website_visitor_geolocator_user",
+    )
+
+    def __str__(self):
+        return str(self.user.email)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_website_visitor_geolocator_user(sender, instance, created, **kwargs):
+    if created:
+        WebsiteVisitorGeolocatorUser.objects.create(user=instance)
 
 
 class Domain(models.Model):
