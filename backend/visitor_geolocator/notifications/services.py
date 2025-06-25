@@ -1,12 +1,13 @@
 import json
 import logging
 from typing import Dict, Any, Optional
+from pywebpush import webpush, WebPushException
 
 from django.conf import settings
-from django.contrib.auth.models import User
-from visitor_geolocator.core.models import Visitor
+from django.contrib.auth.models import AbstractUser
+
+from visitor_geolocator.core.models import Visitor, WebsiteVisitorGeolocatorUser
 from visitor_geolocator.notifications.models import PushSubscription
-from pywebpush import webpush, WebPushException
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +19,13 @@ class NotificationService:
     def handle_new_visitor(visitor: Visitor):
         """Send a new visitor notification to the domain owner"""
         try:
+            website_visitor_geolocator_user, _ = (
+                WebsiteVisitorGeolocatorUser.objects.get_or_create(
+                    user=visitor.domain.created_by
+                )
+            )
             subscriptions = PushSubscription.objects.filter(
-                website_visitor_geolocator_user=visitor.domain.created_by.website_visitor_geolocator_user
+                website_visitor_geolocator_user=website_visitor_geolocator_user
             )
 
             if not subscriptions.exists():
@@ -32,8 +38,8 @@ class NotificationService:
                     body=f"New visitor on {visitor.domain} from {visitor.location_description}",
                 )
 
-        except Exception as e:
-            logger.error(f"Error handling new visitor notification: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Error handling new visitor notification: %s", e)
 
     @staticmethod
     def send_push_notification(
@@ -49,7 +55,7 @@ class NotificationService:
                 or not settings.VAPID_PUBLIC_KEY
                 or not settings.VAPID_EMAIL
             ):
-                raise Exception("VAPID keys or email are not set")
+                raise ValueError("VAPID keys or email are not set")
 
             notification_payload = {
                 "title": title,
@@ -70,7 +76,7 @@ class NotificationService:
                 },
             }
 
-            logger.info(f"Sending push notification with payload: {payload}")
+            logger.info("Sending push notification with payload: %s", payload)
 
             webpush(
                 subscription_info,
@@ -81,21 +87,21 @@ class NotificationService:
                 },
             )
             logger.info(
-                f"Push notification sent successfully to {subscription.endpoint}"
+                "Push notification sent successfully to %s", subscription.endpoint
             )
             return True
         except WebPushException as ex:
-            logger.error(f"WebPushException: {ex}")
+            logger.error("WebPushException: %s", ex)
             if ex.response and ex.response.json():
-                logger.error(f"Response: {ex.response.json()}")
+                logger.error("Response: %s", ex.response.json())
             return False
-        except Exception as e:
-            logger.error(f"Error sending push notification: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Error sending push notification: %s", e)
             return False
 
     @staticmethod
     def create_subscription(
-        user: User, endpoint: str, p256dh: str, auth: str
+        user: AbstractUser, endpoint: str, p256dh: str, auth: str
     ) -> PushSubscription:
         """Delete existing subscription and create a new one"""
         NotificationService.delete_subscription(user.website_visitor_geolocator_user)
@@ -110,18 +116,18 @@ class NotificationService:
         return subscription
 
     @staticmethod
-    def delete_subscription(user: User) -> bool:
+    def delete_subscription(user: AbstractUser) -> bool:
         """Delete push subscription for a user"""
         try:
             PushSubscription.objects.filter(
                 website_visitor_geolocator_user=user.website_visitor_geolocator_user
             ).delete()
             return True
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
     @staticmethod
-    def get_user_subscription(user: User) -> Optional[PushSubscription]:
+    def get_user_subscription(user: AbstractUser) -> Optional[PushSubscription]:
         """Get push subscription for a user"""
         try:
             return PushSubscription.objects.get(

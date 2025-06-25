@@ -21,6 +21,7 @@ class WebsiteVisitorGeolocatorUser(models.Model):
         return str(self.user.email)
 
 
+# pylint: disable=unused-argument
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_website_visitor_geolocator_user(sender, instance, created, **kwargs):
     if created:

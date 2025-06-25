@@ -2,6 +2,7 @@ from django.http import HttpRequest
 from django.urls import reverse
 
 
+# pylint: disable=too-few-public-methods
 class VisitorCorsMiddleware:
     """Middleware to handle CORS for visitor tracking endpoint."""
 
