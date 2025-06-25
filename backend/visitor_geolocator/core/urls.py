@@ -5,13 +5,8 @@ app_name = "wvg_core"
 
 urlpatterns = [
     path(
-        "user/",
-        views.retrieve_user,
-        name="retrieve_user",
-    ),
-    path(
         "visitor/",
-        views.visitor,
+        views.track_visitor,
         name="website_visitor_geolocator_visitor",
     ),
     path(

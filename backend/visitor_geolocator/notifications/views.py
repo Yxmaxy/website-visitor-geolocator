@@ -5,7 +5,6 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from django.conf import settings
 
 from visitor_geolocator.notifications.services import NotificationService
 
@@ -37,7 +36,7 @@ def subscribe_push(request: HttpRequest):
             }
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return JsonResponse(
             {"success": False, "error": str(e)},
             status=500,
@@ -64,7 +63,7 @@ def unsubscribe_push(request: HttpRequest):
                 status=500,
             )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return JsonResponse(
             {"success": False, "error": str(e)},
             status=500,
@@ -86,7 +85,7 @@ def get_subscription_status(request: HttpRequest):
             }
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return JsonResponse(
             {"success": False, "error": str(e)},
             status=500,
