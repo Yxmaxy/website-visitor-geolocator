@@ -1,11 +1,16 @@
 from django.urls import path
-from . import views
+
+from visitor_geolocator.notifications import views
 
 app_name = "wvg_notifications"
 
 urlpatterns = [
-    path("subscribe/", views.subscribe_push, name="subscribe_push"),
-    path("unsubscribe/", views.unsubscribe_push, name="unsubscribe_push"),
-    path("status/", views.get_subscription_status, name="subscription_status"),
-    path("service-worker-push/", views.service_worker_push, name="service_worker_push"),
+    path("subscribe/", views.PushSubscriptionView.as_view(), name="subscribe_push"),
+    path("unsubscribe/", views.PushSubscriptionView.as_view(), name="unsubscribe_push"),
+    path("status/", views.SubscriptionStatusView.as_view(), name="subscription_status"),
+    path(
+        "service-worker-push/",
+        views.ServiceWorkerPushView.as_view(),
+        name="service_worker_push",
+    ),
 ]
