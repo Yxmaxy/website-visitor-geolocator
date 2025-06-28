@@ -42,10 +42,11 @@ class Domain(models.Model):
         help_text="The API key which is used to authenticate requests",
     )
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        WebsiteVisitorGeolocatorUser,
         on_delete=models.CASCADE,
         help_text="The user who created the domain",
     )
+    active = models.BooleanField(default=True)
 
     geolocation_api_token_ipinfo = models.CharField(
         max_length=255, help_text="The access token to the IPInfo API"

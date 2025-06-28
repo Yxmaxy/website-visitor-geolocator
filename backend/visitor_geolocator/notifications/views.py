@@ -48,20 +48,17 @@ def subscribe_push(request: HttpRequest):
 def unsubscribe_push(request: HttpRequest):
     """Unsubscribe from push notifications"""
     try:
-        success = NotificationService.delete_subscription(request.user)
-
-        if success:
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": "Successfully unsubscribed from push notifications",
-                }
-            )
-        else:
+        if not NotificationService.delete_subscription(request.user):
             return JsonResponse(
                 {"success": False, "error": "Failed to unsubscribe"},
                 status=500,
             )
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Successfully unsubscribed from push notifications",
+            }
+        )
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         return JsonResponse(

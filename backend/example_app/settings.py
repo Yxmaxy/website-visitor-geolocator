@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "visitor_geolocator.core",
     "visitor_geolocator.notifications",
-    # "visitor_geolocator.frontend",
+    "visitor_geolocator.frontend",
     # "visitor_geolocator.statistics",
 ]
 

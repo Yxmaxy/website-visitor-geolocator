@@ -6,7 +6,7 @@ from pywebpush import webpush, WebPushException
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
-from visitor_geolocator.core.models import Visitor, WebsiteVisitorGeolocatorUser
+from visitor_geolocator.core.models import Visitor
 from visitor_geolocator.notifications.models import PushSubscription
 
 logger = logging.getLogger(__name__)
@@ -19,13 +19,8 @@ class NotificationService:
     def handle_new_visitor(visitor: Visitor):
         """Send a new visitor notification to the domain owner"""
         try:
-            website_visitor_geolocator_user, _ = (
-                WebsiteVisitorGeolocatorUser.objects.get_or_create(
-                    user=visitor.domain.created_by
-                )
-            )
             subscriptions = PushSubscription.objects.filter(
-                website_visitor_geolocator_user=website_visitor_geolocator_user
+                website_visitor_geolocator_user=visitor.domain.created_by
             )
 
             if not subscriptions.exists():
