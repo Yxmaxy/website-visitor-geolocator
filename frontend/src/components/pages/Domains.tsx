@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +11,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { Plus, Edit, Trash2, Copy, Eye, EyeOff, ExternalLink, LineChart } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogContent,
@@ -26,6 +25,9 @@ import {
 import { DomainApiService } from "@/services/apiDomain";
 import type { Domain, DomainCreate, DomainUpdate } from "@/services/apiDomain";
 import { copyToClipboard } from "@/utils/clipboard";
+
+import { Plus, Edit, Trash2, Copy, Eye, EyeOff, ExternalLink, LineChart, GlobeIcon } from "lucide-react";
+
 
 // Domain Card Component
 interface DomainCardProps {
@@ -143,32 +145,6 @@ function DomainCard({
                             </Tooltip>
                         </div>
                     </div>
-                    
-                    {domain.geolocation_api_token_ipinfo && (
-                        <div>
-                            <Label className="text-sm font-medium">IPInfo API Token</Label>
-                            <div className="flex items-center gap-2 mt-1">
-                                <Input
-                                    type={showApiKeys[domain.id] ? "text" : "password"}
-                                    value={domain.geolocation_api_token_ipinfo}
-                                    readOnly
-                                    className="font-mono text-sm"
-                                />
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => copyToClipboard(domain.geolocation_api_token_ipinfo)}
-                                        >
-                                            <Copy className="w-4 h-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Copy IPInfo token</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </CardContent>
         </Card>
@@ -486,10 +462,13 @@ interface DomainHeaderProps {
 
 function DomainHeader({ onCreateClick, disabled = false }: DomainHeaderProps) {
     return (
-        <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">My Domains</h1>
+        <div className="flex items-center justify-between mb-6 h-12">
+            <div className="flex items-center gap-2">
+                <GlobeIcon className="h-6 w-6" />
+                <h1 className="text-2xl font-bold">My Domains</h1>
+            </div>
             <Button onClick={onCreateClick} disabled={disabled}>
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-1" />
                 Add Domain
             </Button>
         </div>
@@ -503,7 +482,7 @@ function LoadingSkeleton() {
             <DomainHeader onCreateClick={() => {}} disabled={true} />
             <div className="grid gap-4">
                 {[1, 2, 3].map(i => (
-                    <Card key={i} className="min-h-48">
+                    <Card key={i} className="min-h-38">
                         <CardHeader>
                             <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
                         </CardHeader>
@@ -693,7 +672,7 @@ function Domains() {
             {domains.length === 0 ? (
                 <EmptyState onCreateClick={() => setIsCreateDialogOpen(true)} />
             ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-10 mt-5">
                     {domains.map((domain) => (
                         <DomainCard
                             key={domain.id}

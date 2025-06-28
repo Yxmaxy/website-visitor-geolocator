@@ -31,11 +31,11 @@ export interface DomainScript {
 
 export class DomainApiService {
     static async getDomains(): Promise<Domain[]> {
-        return ApiService.get<Domain[]>("/domain/list/");
+        return ApiService.get<Domain[]>("/domain/");
     }
 
     static async createDomain(data: DomainCreate): Promise<Domain> {
-        return ApiService.post<Domain, DomainCreate>("/domain/create/", data);
+        return ApiService.post<Domain, DomainCreate>("/domain/", data);
     }
 
     static async updateDomain(domainId: number, data: DomainUpdate): Promise<Domain> {

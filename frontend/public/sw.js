@@ -40,7 +40,6 @@ self.addEventListener("push", (event) => {
         body: "You have a new notification",
         icon: "/static/img/notification-icon.png",  // TODO: add icons
         badge: "/static/img/badge-icon.png",
-        vibrate: [200, 100, 200],
         data: {}
     };
 

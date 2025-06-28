@@ -25,7 +25,15 @@ class WebsiteVisitorGeolocatorUser(models.Model):
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_website_visitor_geolocator_user(sender, instance, created, **kwargs):
     if created:
-        WebsiteVisitorGeolocatorUser.objects.create(user=instance)
+        website_visitor_geolocator_user = WebsiteVisitorGeolocatorUser.objects.create(
+            user=instance
+        )
+        # pylint: disable=import-outside-toplevel
+        from visitor_geolocator.notifications.models import NotificationPreferences
+
+        NotificationPreferences.objects.create(
+            website_visitor_geolocator_user=website_visitor_geolocator_user
+        )
 
 
 class Domain(models.Model):

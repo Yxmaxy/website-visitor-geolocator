@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")!).render(
                 <AppSidebar />
                 <SidebarInset>
                     <AppHeader />
-                    <div className="mx-auto w-full max-w-4xl px-4">
+                    <div className="mx-auto w-full max-w-4xl px-4 mb-8">
                         <Routes>
                             <Route path="/" element={<Navigate to="/dashboard" />} />
                             <Route path="/dashboard" element={<Dashboard />} />

@@ -21,6 +21,6 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("wvg/", include("visitor_geolocator.core.urls")),
-    path("wvg/notifications/", include("visitor_geolocator.notifications.urls")),
     path("wvg/api/", include("visitor_geolocator.frontend.urls")),
+    path("wvg/api/notifications/", include("visitor_geolocator.notifications.urls")),
 ]
