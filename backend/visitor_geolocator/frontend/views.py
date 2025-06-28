@@ -1,101 +1,56 @@
-import json
+from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from django.http import HttpRequest, JsonResponse, HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.shortcuts import get_object_or_404
 
 from visitor_geolocator.core.models import Domain, WebsiteVisitorGeolocatorUser
-from visitor_geolocator.core.services import DomainService
-from .serializers import serialize_domain
+from visitor_geolocator.frontend.serializers import UserSerializer, DomainSerializer
 
 
-@login_required
-@require_http_methods(["GET"])
-def retrieve_user(request: HttpRequest):
-    """Retrieves the user from the request."""
-    user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
-    return JsonResponse({"success": True, "user": user.user.email})
+class UserAPIView(APIView):
+    """View for user operations"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Retrieves the user from the request."""
+        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
+        serializer = UserSerializer(data={"user": user.user.email})
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
 
-# Domain management
+class DomainListCreateAPIView(ListCreateAPIView):
+    """View for listing and creating domains"""
 
+    permission_classes = [IsAuthenticated]
 
-@login_required
-@require_http_methods(["GET"])
-def domain_list(request: HttpRequest):
-    """Get all domains for the authenticated user."""
-    domains = Domain.objects.filter(
-        created_by=request.user.website_visitor_geolocator_user
-    )
-    domains_data = []
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
 
-    for domain in domains:
-        domains_data.append(
-            serialize_domain(
-                domain,
-                script_url=DomainService.get_script_url(domain, request),
-            )
+    def get_queryset(self):
+        """Get all domains for the authenticated user."""
+        return Domain.objects.filter(
+            created_by=self.request.user.website_visitor_geolocator_user
         )
 
-    return JsonResponse(domains_data, safe=False)
+    def perform_create(self, serializer):
+        """Set the created_by field when creating a domain"""
+        serializer.save(created_by=self.request.user.website_visitor_geolocator_user)
 
 
-@login_required
-@require_http_methods(["POST"])
-def domain_create(request: HttpRequest):
-    """Create a new domain for the authenticated user."""
-    data = json.loads(request.body)
-    domain_url = data.get("domain", "").strip()
-    ipinfo_token = data.get("geolocation_api_token_ipinfo", "").strip()
+class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    """View for retrieving, updating, and deleting a specific domain"""
 
-    if not domain_url:
-        return JsonResponse({"error": "Domain is required"}, status=400)
+    permission_classes = [IsAuthenticated]
+    serializer_class = DomainSerializer
 
-    domain = Domain.objects.create(
-        domain=domain_url,
-        geolocation_api_token_ipinfo=ipinfo_token,
-        created_by=request.user.website_visitor_geolocator_user,
-    )
-
-    domain_data = serialize_domain(
-        domain,
-        script_url=DomainService.get_script_url(domain, request),
-    )
-
-    return JsonResponse(domain_data, status=201)
-
-
-@login_required
-@require_http_methods(["GET", "PUT", "DELETE"])
-def domain_detail(request: HttpRequest, domain_id: int):
-    """Get, update, or delete a specific domain."""
-    try:
-        domain = Domain.objects.get(
-            id=domain_id, created_by=request.user.website_visitor_geolocator_user
+    def get_object(self):
+        """Get the domain object or return 404"""
+        return get_object_or_404(
+            Domain,
+            id=self.kwargs["pk"],
+            created_by=self.request.user.website_visitor_geolocator_user,
         )
-    except Domain.DoesNotExist:
-        return JsonResponse({"error": "Domain not found"}, status=404)
-
-    if request.method == "GET":
-        domain_data = serialize_domain(domain)
-        return JsonResponse(domain_data)
-
-    if request.method == "PUT":
-        data = json.loads(request.body)
-
-        domain.domain = data["domain"].strip()
-        domain.geolocation_api_token_ipinfo = data[
-            "geolocation_api_token_ipinfo"
-        ].strip()
-        domain.active = data["active"]
-
-        domain.save()
-
-        domain_data = serialize_domain(domain)
-        return JsonResponse(domain_data)
-
-    if request.method == "DELETE":
-        domain.delete()
-        return JsonResponse({}, status=204)
-
-    return HttpResponse(status=405)
