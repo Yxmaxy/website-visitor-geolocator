@@ -1,6 +1,6 @@
 (async function() {
-    const endpoint = "{host}{endpoint}";
-    const apiKey = "{api_key}";
+    const endpoint = "{{ host }}{{ endpoint }}";
+    const apiKey = "{{ api_key }}";
     if (!apiKey) {
         console.error("Website Visitor Geolocator: API key is required");
         return;
@@ -8,8 +8,8 @@
 
     function storeTrackingData() {
         const expires = new Date();
-        expires.setTime(expires.getTime() + ({settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOKIE_EXPIRATION} * 1000));
-        localStorage.setItem("{VISITOR_TRACKING_NAME}", expires.getTime());
+        expires.setTime(expires.getTime() + ({{ cookie_expiration }} * 1000));
+        localStorage.setItem("wvg_tracking", expires.getTime());
     }
 
     const trackingData = localStorage.getItem("{VISITOR_TRACKING_NAME}");

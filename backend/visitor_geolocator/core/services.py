@@ -52,6 +52,11 @@ class DomainService:
         visitor.save()
         return visitor, True
 
+    @staticmethod
+    def get_script_url(domain: Domain, request: HttpRequest):
+        host = f"{request.scheme}://{request.get_host()}"
+        return f"{host}/wvg/tracking.js?api_key={domain.api_key}"
+
 
 class GeolocationService:
     @staticmethod

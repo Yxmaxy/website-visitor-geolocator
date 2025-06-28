@@ -8,8 +8,6 @@ from django.template.loader import render_to_string
 from visitor_geolocator.core.services import DomainService
 from visitor_geolocator.notifications.services import NotificationService
 
-VISITOR_TRACKING_NAME = "wvg_tracking"
-
 
 @require_http_methods(["GET"])
 def tracking_script(request: HttpRequest):
@@ -20,11 +18,12 @@ def tracking_script(request: HttpRequest):
     api_key = request.GET.get("api_key")
 
     script_content = render_to_string(
-        "tracking_script.js",
+        "tracking_script.txt",
         {
             "host": host,
             "endpoint": endpoint,
             "api_key": api_key,
+            "cookie_expiration": settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOKIE_EXPIRATION,
         },
     )
     response = HttpResponse(script_content, content_type="application/javascript")
