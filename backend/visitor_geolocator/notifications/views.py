@@ -1,99 +1,121 @@
-import json
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from django.http.request import HttpRequest
-from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from visitor_geolocator.notifications.services import NotificationService
+from visitor_geolocator.notifications.serializers import (
+    PushSubscriptionCreateSerializer,
+    SubscriptionStatusSerializer,
+    PushNotificationResponseSerializer,
+)
 
 
-@login_required
-@require_http_methods(["POST"])
-def subscribe_push(request: HttpRequest):
-    """Subscribe to push notifications"""
-    try:
-        data = json.loads(request.body)
-        endpoint = data.get("endpoint")
-        p256dh = data.get("keys", {}).get("p256dh")
-        auth = data.get("keys", {}).get("auth")
+class PushSubscriptionView(APIView):
+    """View for push subscription operations"""
 
-        if not all([endpoint, p256dh, auth]):
-            return JsonResponse(
-                {"success": False, "error": "Missing required subscription data"},
-                status=400,
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Subscribe to push notifications"""
+        try:
+            serializer = PushSubscriptionCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            data = serializer.validated_data
+            endpoint = data["endpoint"]
+            p256dh = data["keys"]["p256dh"]
+            auth = data["keys"]["auth"]
+
+            NotificationService.create_subscription(
+                user=request.user, endpoint=endpoint, p256dh=p256dh, auth=auth
             )
 
-        NotificationService.create_subscription(
-            user=request.user, endpoint=endpoint, p256dh=p256dh, auth=auth
-        )
-
-        return JsonResponse(
-            {
+            response_data = {
                 "success": True,
                 "message": "Successfully subscribed to push notifications",
             }
-        )
+            response_serializer = PushNotificationResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(response_serializer.data)
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return JsonResponse(
-            {"success": False, "error": str(e)},
-            status=500,
-        )
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def unsubscribe_push(request: HttpRequest):
-    """Unsubscribe from push notifications"""
-    try:
-        if not NotificationService.delete_subscription(request.user):
-            return JsonResponse(
-                {"success": False, "error": "Failed to unsubscribe"},
-                status=500,
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            response_data = {"success": False, "error": str(e)}
+            response_serializer = PushNotificationResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(
+                response_serializer.data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        return JsonResponse(
-            {
+
+    def delete(self, request):
+        """Unsubscribe from push notifications"""
+        try:
+            if not NotificationService.delete_subscription(request.user):
+                response_data = {"success": False, "error": "Failed to unsubscribe"}
+                response_serializer = PushNotificationResponseSerializer(
+                    data=response_data
+                )
+                response_serializer.is_valid(raise_exception=True)
+                return Response(
+                    response_serializer.data,
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            response_data = {
                 "success": True,
                 "message": "Successfully unsubscribed from push notifications",
             }
-        )
+            response_serializer = PushNotificationResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(response_serializer.data)
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return JsonResponse(
-            {"success": False, "error": str(e)},
-            status=500,
-        )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            response_data = {"success": False, "error": str(e)}
+            response_serializer = PushNotificationResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(
+                response_serializer.data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-@login_required
-@require_http_methods(["GET"])
-def get_subscription_status(request: HttpRequest):
-    """Get current subscription status"""
-    try:
-        subscription = NotificationService.get_user_subscription(request.user)
+class SubscriptionStatusView(APIView):
+    """View for subscription status operations"""
 
-        return JsonResponse(
-            {
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Get current subscription status"""
+        try:
+            subscription = NotificationService.get_user_subscription(request.user)
+
+            response_data = {
                 "success": True,
                 "subscribed": subscription is not None,
                 "subscription": subscription.to_dict() if subscription else None,
             }
-        )
+            response_serializer = SubscriptionStatusSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(response_serializer.data)
 
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        return JsonResponse(
-            {"success": False, "error": str(e)},
-            status=500,
-        )
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            response_data = {"success": False, "error": str(e)}
+            response_serializer = PushNotificationResponseSerializer(data=response_data)
+            response_serializer.is_valid(raise_exception=True)
+            return Response(
+                response_serializer.data, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def service_worker_push(request: HttpRequest):
-    """Endpoint for service worker to receive push messages"""
-    # This endpoint is called by the browser's push service
-    # We don't need to do anything here as the actual notification
-    # is handled by the service worker on the client side
-    return HttpResponse(status=200)
+@method_decorator(csrf_exempt, name="dispatch")
+class ServiceWorkerPushView(APIView):
+    """View for service worker push operations"""
+
+    def post(self, request):
+        """Endpoint for service worker to receive push messages"""
+        # This endpoint is called by the browser's push service
+        # We don't need to do anything here as the actual notification
+        # is handled by the service worker on the client side
+        return Response(status=status.HTTP_200_OK)
