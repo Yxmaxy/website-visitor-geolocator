@@ -49,7 +49,10 @@ class Domain(models.Model):
     active = models.BooleanField(default=True)
 
     geolocation_api_token_ipinfo = models.CharField(
-        max_length=255, help_text="The access token to the IPInfo API"
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="The access token to the IPInfo API",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

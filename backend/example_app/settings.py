@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "rest_framework",
     "visitor_geolocator.core",
     "visitor_geolocator.notifications",
     "visitor_geolocator.frontend",
