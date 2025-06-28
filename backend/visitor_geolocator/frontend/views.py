@@ -4,9 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import logout
 
 from visitor_geolocator.core.models import Domain, WebsiteVisitorGeolocatorUser
 from visitor_geolocator.frontend.serializers import UserSerializer, DomainSerializer
+from visitor_geolocator.notifications.models import NotificationPreferences
+from visitor_geolocator.notifications.serializers import (
+    NotificationPreferencesSerializer,
+)
 
 
 class UserAPIView(APIView):
@@ -54,3 +59,45 @@ class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             id=self.kwargs["pk"],
             created_by=self.request.user.website_visitor_geolocator_user,
         )
+
+
+class NotificationPreferencesAPIView(APIView):
+    """View for notification preferences operations"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Get user notification preferences"""
+        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
+        preferences, _ = NotificationPreferences.objects.get_or_create(
+            website_visitor_geolocator_user=user
+        )
+
+        serializer = NotificationPreferencesSerializer(preferences)
+        return Response(serializer.data)
+
+    def put(self, request):
+        """Update user notification preferences"""
+        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
+        preferences, _ = NotificationPreferences.objects.get_or_create(
+            website_visitor_geolocator_user=user
+        )
+
+        serializer = NotificationPreferencesSerializer(
+            preferences, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+
+class LogoutView(APIView):
+    """View for user logout"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Logout the user"""
+        logout(request)
+        return Response({"success": True, "message": "Successfully logged out"})
