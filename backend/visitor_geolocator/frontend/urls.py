@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from visitor_geolocator.frontend import views
 
@@ -32,4 +32,6 @@ urlpatterns = [
         views.NotificationPreferencesAPIView.as_view(),
         name="notification_preferences_api",
     ),
+    # Statistics
+    path("statistics/", include("visitor_geolocator.statistics.urls")),
 ]

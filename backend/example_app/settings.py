@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "visitor_geolocator.core",
     "visitor_geolocator.notifications",
     "visitor_geolocator.frontend",
-    # "visitor_geolocator.statistics",
+    "visitor_geolocator.statistics",
 ]
 
 MIDDLEWARE = [

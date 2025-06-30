@@ -24,7 +24,7 @@ import {
 
 import { DomainApiService } from "@/services/apiDomain";
 import type { Domain, DomainCreate, DomainUpdate } from "@/services/apiDomain";
-import { copyToClipboard } from "@/utils/clipboard";
+import { copyToClipboard } from "@/services/clipboard";
 
 import { Plus, Edit, Trash2, Copy, Eye, EyeOff, ExternalLink, LineChart, GlobeIcon } from "lucide-react";
 
