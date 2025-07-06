@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import type { AreaStatistics, AreaGeometries, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
 import StatisticsApiService, { LevelChoices } from "@/services/apiStatistics";
@@ -753,54 +754,231 @@ function UserAgentTable({ userAgentDistribution, title, description }: UserAgent
     );
 }
 
+// Skeleton Components
+function LatestVisitorsSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5" />
+                    <Skeleton className="h-6 w-32" />
+                </div>
+                <Skeleton className="h-4 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Skeleton className="h-[300px] w-full" />
+                <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex gap-4">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-4 w-40" />
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function MapStatisticsSkeleton({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    {icon}
+                    {title}
+                </CardTitle>
+                <CardDescription>
+                    {description}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-[250px] w-full rounded-lg" />
+            </CardContent>
+        </Card>
+    );
+}
+
+function AreaStatisticsTableSkeleton({ title, description }: { title: string; description: string }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent className="h-full">
+                <div className="space-y-4 flex flex-col h-full justify-between">
+                    <div className="rounded-md border">
+                        <div className="p-4 space-y-2">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-4 w-16" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <Skeleton className="h-8 w-32" />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function UserAgentPieChartSkeleton({ title, description }: { title: string; description: string }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Monitor className="h-5 w-5" />
+                    {title}
+                </CardTitle>
+                <CardDescription>
+                    {description}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+            </CardContent>
+        </Card>
+    );
+}
+
+function UserAgentTableSkeleton({ title, description }: { title: string; description: string }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent className="h-full">
+                <div className="space-y-4 flex flex-col h-full justify-between">
+                    <div className="rounded-md border">
+                        <div className="p-4 space-y-2">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-4 w-16" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <Skeleton className="h-8 w-32" />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 // Main Statistics Component
 function Statistics() {
     const [domains, setDomains] = useState<Domain[]>([]);
     const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
     const [lastDays, setLastDays] = useState<number>(30);
-    const [loading, setLoading] = useState(true);
 
+    // Individual loading states
+    const [countryStatisticsLoading, setCountryStatisticsLoading] = useState(true);
+    const [continentStatisticsLoading, setContinentStatisticsLoading] = useState(true);
+    const [visitorsLoading, setVisitorsLoading] = useState(true);
+    const [userAgentDistributionLoading, setUserAgentDistributionLoading] = useState(true);
+
+    // Data states
     const [countryStatistics, setCountryStatistics] = useState<AreaStatistics[]>([]);
     const [continentStatistics, setContinentStatistics] = useState<AreaStatistics[]>([]);
     const [visitors, setVisitors] = useState<Visitor[]>([]);
     const [userAgentDistribution, setUserAgentDistribution] = useState<UserAgentDistribution[]>([]);
 
-    const loadData = useCallback(async () => {
+    // Load domains independently
+    const loadDomains = useCallback(async () => {
         try {
-            setLoading(true);
-            const [
-                domainsData,
-                areaStatsData,
-                continentStatsData,
-                visitorsData,
-                userAgentDistributionData,
-            ] = await Promise.all([
-                DomainApiService.getDomains(),
-                StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.COUNTRY, lastDays),
-                StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.CONTINENT, lastDays),
-                StatisticsApiService.getLatestVisitors(selectedDomain?.id, lastDays),
-                StatisticsApiService.getUserAgentDistribution(selectedDomain?.id, lastDays),
-            ]);
+            const domainsData = await DomainApiService.getDomains();
             setDomains(domainsData);
-            setCountryStatistics(areaStatsData);
-            setContinentStatistics(continentStatsData);
-            setVisitors(visitorsData);
-            setUserAgentDistribution(userAgentDistributionData);
         } catch (error) {
-            toast.error("Failed to load statistics data");
-            throw error;
+            toast.error("Failed to load domains");
+        }
+    }, []);
+
+    // Load country statistics independently
+    const loadCountryStatistics = useCallback(async () => {
+        try {
+            setCountryStatisticsLoading(true);
+            const areaStatsData = await StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.COUNTRY, lastDays);
+            setCountryStatistics(areaStatsData);
+        } catch (error) {
+            toast.error("Failed to load country statistics");
         } finally {
-            setLoading(false);
+            setCountryStatisticsLoading(false);
         }
     }, [selectedDomain?.id, lastDays]);
 
+    // Load continent statistics independently
+    const loadContinentStatistics = useCallback(async () => {
+        try {
+            setContinentStatisticsLoading(true);
+            const continentStatsData = await StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.CONTINENT, lastDays);
+            setContinentStatistics(continentStatsData);
+        } catch (error) {
+            toast.error("Failed to load continent statistics");
+        } finally {
+            setContinentStatisticsLoading(false);
+        }
+    }, [selectedDomain?.id, lastDays]);
+
+    // Load visitors independently
+    const loadVisitors = useCallback(async () => {
+        try {
+            setVisitorsLoading(true);
+            const visitorsData = await StatisticsApiService.getLatestVisitors(selectedDomain?.id, lastDays);
+            setVisitors(visitorsData);
+        } catch (error) {
+            toast.error("Failed to load visitors data");
+        } finally {
+            setVisitorsLoading(false);
+        }
+    }, [selectedDomain?.id, lastDays]);
+
+    // Load user agent distribution independently
+    const loadUserAgentDistribution = useCallback(async () => {
+        try {
+            setUserAgentDistributionLoading(true);
+            const userAgentDistributionData = await StatisticsApiService.getUserAgentDistribution(selectedDomain?.id, lastDays);
+            setUserAgentDistribution(userAgentDistributionData);
+        } catch (error) {
+            toast.error("Failed to load user agent distribution");
+        } finally {
+            setUserAgentDistributionLoading(false);
+        }
+    }, [selectedDomain?.id, lastDays]);
+
+    // Load domains on mount
     useEffect(() => {
-        loadData();
-    }, [loadData]);
-    
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+        loadDomains();
+    }, [loadDomains]);
+
+    // Load statistics when domain or days change
+    useEffect(() => {
+        loadCountryStatistics();
+        loadContinentStatistics();
+        loadVisitors();
+        loadUserAgentDistribution();
+    }, [loadCountryStatistics, loadContinentStatistics, loadVisitors, loadUserAgentDistribution]);
     
     return (
         <div>
@@ -814,72 +992,120 @@ function Statistics() {
 
             <div className="space-y-6 mt-6">
                 {/* Latest visitors */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            Latest Visitors
-                        </CardTitle>
-                        <CardDescription>
-                            Recent visitor activity
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <LatestVisitorsChart
-                            visitors={visitors}
-                            lastDays={lastDays}
-                        />
-                        <LatestVisitorsDataTable
-                            visitors={visitors}
-                        />
-                    </CardContent>
-                </Card>
+                {visitorsLoading ? (
+                    <LatestVisitorsSkeleton />
+                ) : (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Clock className="h-5 w-5" />
+                                Latest Visitors
+                            </CardTitle>
+                            <CardDescription>
+                                Recent visitor activity
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <LatestVisitorsChart
+                                visitors={visitors}
+                                lastDays={lastDays}
+                            />
+                            <LatestVisitorsDataTable
+                                visitors={visitors}
+                            />
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Continent Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MapStatisticsCard
-                        statistics={continentStatistics}
-                        level={LevelChoices.CONTINENT}
-                        icon={<Globe className="h-5 w-5" />}
-                        title="Visitors by Continent"
-                        description="Distribution of visitors by continent"
-                    />
-                    <AreaStatisticsTable
-                        statistics={continentStatistics}
-                        title="Continents"
-                        description="Visitor statistics by continent"
-                        showFlag={true}
-                    />
+                    {continentStatisticsLoading ? (
+                        <MapStatisticsSkeleton
+                            title="Visitors by Continent"
+                            description="Distribution of visitors by continent"
+                            icon={<Globe className="h-5 w-5" />}
+                        />
+                    ) : (
+                        <MapStatisticsCard
+                            statistics={continentStatistics}
+                            level={LevelChoices.CONTINENT}
+                            icon={<Globe className="h-5 w-5" />}
+                            title="Visitors by Continent"
+                            description="Distribution of visitors by continent"
+                        />
+                    )}
+                    {continentStatisticsLoading ? (
+                        <AreaStatisticsTableSkeleton
+                            title="Continents"
+                            description="Visitor statistics by continent"
+                        />
+                    ) : (
+                        <AreaStatisticsTable
+                            statistics={continentStatistics}
+                            title="Continents"
+                            description="Visitor statistics by continent"
+                            showFlag={true}
+                        />
+                    )}
                 </div>
 
                 {/* Country Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MapStatisticsCard
-                        statistics={countryStatistics}
-                        level={LevelChoices.COUNTRY}
-                        icon={<MapPin className="h-5 w-5" />}
-                        title="Visitors by Country"
-                        description="Distribution of visitors by country"
-                    />
-                    <AreaStatisticsTable
-                        statistics={countryStatistics}
-                        title="Countries"
-                        description="Visitor statistics by country"
-                    />
+                    {countryStatisticsLoading ? (
+                        <MapStatisticsSkeleton
+                            title="Visitors by Country"
+                            description="Distribution of visitors by country"
+                            icon={<MapPin className="h-5 w-5" />}
+                        />
+                    ) : (
+                        <MapStatisticsCard
+                            statistics={countryStatistics}
+                            level={LevelChoices.COUNTRY}
+                            icon={<MapPin className="h-5 w-5" />}
+                            title="Visitors by Country"
+                            description="Distribution of visitors by country"
+                        />
+                    )}
+                    {countryStatisticsLoading ? (
+                        <AreaStatisticsTableSkeleton
+                            title="Countries"
+                            description="Visitor statistics by country"
+                        />
+                    ) : (
+                        <AreaStatisticsTable
+                            statistics={countryStatistics}
+                            title="Countries"
+                            description="Visitor statistics by country"
+                        />
+                    )}
                 </div>
 
                 {/* User Agent Distribution */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <UserAgentPieChart
-                        userAgentDistribution={userAgentDistribution}
-                        title="Browser Distribution"
-                        description="Distribution of visitors by browser"
-                    />
-                    <UserAgentTable
-                        userAgentDistribution={userAgentDistribution}
-                        title="Browsers"
-                        description="Visitor statistics by browser"
-                    />
+                    {userAgentDistributionLoading ? (
+                        <UserAgentPieChartSkeleton
+                            title="Browser Distribution"
+                            description="Distribution of visitors by browser"
+                        />
+                    ) : (
+                        <UserAgentPieChart
+                            userAgentDistribution={userAgentDistribution}
+                            title="Browser Distribution"
+                            description="Distribution of visitors by browser"
+                        />
+                    )}
+                    {userAgentDistributionLoading ? (
+                        <UserAgentTableSkeleton
+                            title="Browsers"
+                            description="Visitor statistics by browser"
+                        />
+                    ) : (
+                        <UserAgentTable
+                            userAgentDistribution={userAgentDistribution}
+                            title="Browsers"
+                            description="Visitor statistics by browser"
+                        />
+                    )}
                 </div>
 
             </div>
