@@ -36,7 +36,7 @@ interface NavigationCardProps {
 function NavigationCard({ title, description, icon, href }: NavigationCardProps) {
     return (
         <Link to={href} className="block">
-            <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group">
+            <Card className="cursor-pointer group">
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                         <div className={`p-2 rounded-lg bg-black`}>
