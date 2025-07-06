@@ -119,3 +119,17 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Leaflet */
+.leaflet-pane {
+    z-index: 50 !important;
+}
+.leaflet-interactive {
+    outline: none !important;
+    cursor: default !important;
+}
+
+/* Recharts */
+.recharts-surface {
+    outline: none !important;
+}

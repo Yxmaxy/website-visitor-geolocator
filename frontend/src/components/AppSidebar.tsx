@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar.tsx"
 
-import { ChartBarIcon, GlobeIcon, GaugeIcon, SettingsIcon } from "lucide-react";
+import { GlobeIcon, GaugeIcon, SettingsIcon, BarChart3Icon } from "lucide-react";
 
 function AppSidebar() {
     return (
@@ -24,7 +24,7 @@ function AppSidebar() {
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild>
                             <Link to="/statistics">
-                                <ChartBarIcon className="mr-1" />
+                                <BarChart3Icon className="mr-1" />
                                 <span>Statistics</span>
                             </Link>
                         </SidebarMenuButton>

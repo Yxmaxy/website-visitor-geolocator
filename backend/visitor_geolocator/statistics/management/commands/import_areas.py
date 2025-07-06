@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long, broad-exception-caught
+
 import os
 import json
 
@@ -49,18 +51,69 @@ class Command(BaseCommand):
             data = json.load(f)
 
         for feature in data["features"]:
-            geometry = GEOSGeometry(json.dumps(feature["geometry"]))
-            properties = feature["properties"]
+            try:
+                geometry = GEOSGeometry(json.dumps(feature["geometry"]))
+                properties: dict = feature["properties"]
 
-            # Convert Polygon to MultiPolygon if needed
-            if geometry.geom_type == "Polygon":
-                geometry = MultiPolygon(geometry)
+                area_name = properties.get(name_variable)
 
-            Area.objects.create(
-                name=properties.get(name_variable),
-                geometry=geometry,
-                level=level,
-            )
+                # skip unwanted areas
+                if area_name in ["Antarctica"]:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Skipping {area_name} - it is not a country"
+                        )
+                    )
+                    continue
+
+                # validate geometry and attempt to repair if invalid
+                if not geometry.valid:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Invalid geometry for {area_name} - attempting to repair..."
+                        )
+                    )
+                    # try to repair the geometry using buffer(0) technique
+                    try:
+                        repaired_geometry = geometry.buffer(0)
+                        if repaired_geometry.valid:
+                            geometry = repaired_geometry
+                            self.stdout.write(
+                                self.style.SUCCESS(
+                                    f"Successfully repaired geometry for {area_name}"
+                                )
+                            )
+                        else:
+                            self.stderr.write(
+                                self.style.WARNING(
+                                    f"Could not repair geometry for {area_name} - skipping"
+                                )
+                            )
+                            continue
+                    except Exception as repair_error:
+                        self.stderr.write(
+                            self.style.WARNING(
+                                f"Could not repair geometry for {area_name}: {repair_error} - skipping"
+                            )
+                        )
+                        continue
+
+                # convert Polygon to MultiPolygon if needed
+                if geometry.geom_type == "Polygon":
+                    geometry = MultiPolygon(geometry)
+
+                Area.objects.create(
+                    name=area_name,
+                    geometry=geometry,
+                    level=level,
+                )
+            except Exception as e:
+                self.stderr.write(
+                    self.style.ERROR(
+                        f"Error processing feature for {properties.get(name_variable) if 'properties' in locals() else 'unknown'}: {e}"
+                    )
+                )
+                continue
 
         self.stdout.write(
             self.style.SUCCESS(
