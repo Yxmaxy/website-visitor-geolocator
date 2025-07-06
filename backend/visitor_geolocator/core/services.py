@@ -5,8 +5,9 @@ import requests
 from django.core.cache import cache
 from django.http.request import HttpRequest
 from django.contrib.gis.geos import Point
+from django.db.models import QuerySet
 
-from visitor_geolocator.core.models import Domain, Visitor
+from visitor_geolocator.core.models import Domain, Visitor, WebsiteVisitorGeolocatorUser
 
 
 class DomainService:
@@ -30,6 +31,10 @@ class DomainService:
             cache.set(cache_key, domain, timeout=60 * 60 * 24)  # 24 hours
 
         return domain
+
+    @staticmethod
+    def get_owner_domains(user: WebsiteVisitorGeolocatorUser) -> QuerySet[Domain]:
+        return Domain.objects.filter(created_by=user)
 
     @staticmethod
     def save_domain_visitor(
@@ -63,7 +68,7 @@ class GeolocationService:
     def _create_localhost_visitor(ip_address: str) -> Visitor:
         return Visitor(
             ip_address=ip_address,
-            location=Point(x=0, y=0),
+            location=Point(x=14.505751, y=46.056946, srid=4326),
             location_description="Localhost",
             timezone="UTC",
         )

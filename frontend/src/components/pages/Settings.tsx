@@ -278,6 +278,48 @@ function NotificationPreferencesCard({
                             />
                         </div>
                     </div>
+
+                    {/* <Separator />
+
+                    TODO: maybe monthly instead of daily ...
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium">Daily Summary Notifications</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Get a daily summary of your website's activity
+                                </p>
+                            </div>
+                            <Switch
+                                checked={notificationPreferences.daily_summary_notifications}
+                                onCheckedChange={(checked) => {
+                                    handleSettingsUpdate({ daily_summary_notifications: checked });
+                                }}
+                                disabled={disabled}
+                            />
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium">Weekly Summary Notifications</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Get a weekly summary of your website's activity
+                                </p>
+                            </div>
+                            <Switch
+                                checked={notificationPreferences.weekly_summary_notifications}
+                                onCheckedChange={(checked) => {
+                                    handleSettingsUpdate({ weekly_summary_notifications: checked });
+                                }}
+                                disabled={disabled}
+                            />
+                        </div>
+                    </div> */}
                 </div>
 
                 <Separator />
