@@ -36,10 +36,10 @@ interface NavigationCardProps {
 function NavigationCard({ title, description, icon, href }: NavigationCardProps) {
     return (
         <Link to={href} className="block">
-            <Card className="cursor-pointer group">
+            <Card className="cursor-pointer group hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                        <div className={`p-2 rounded-lg bg-black`}>
+                        <div className={`p-2 rounded-lg bg-primary`}>
                             {icon}
                         </div>
                         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform duration-200" />
@@ -108,12 +108,12 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
                             />
                             <YAxis />
                             <Tooltip />
-                            <Line 
+                            <Line
                                 type="monotone" 
                                 dataKey="visitors" 
-                                stroke="#000000" 
+                                stroke="var(--chart-1)" 
                                 strokeWidth={2}
-                                dot={{ fill: "#000000", strokeWidth: 2, r: 4 }}
+                                dot={{ strokeWidth: 2, r: 4 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -370,16 +370,16 @@ function Dashboard() {
                 {/* Navigation Cards */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <NavigationCard
-                        title="Statistics"
-                        description="View detailed visitor analytics and trends"
-                        icon={<BarChart3 className="h-5 w-5 text-white" />}
-                        href="/statistics"
-                    />
-                    <NavigationCard
                         title="My Domains"
                         description="Manage your tracking domains and settings"
                         icon={<Globe className="h-5 w-5 text-white" />}
                         href="/domains"
+                    />
+                    <NavigationCard
+                        title="Statistics"
+                        description="View detailed visitor analytics and trends"
+                        icon={<BarChart3 className="h-5 w-5 text-white" />}
+                        href="/statistics"
                     />
                     <NavigationCard
                         title="Settings"
