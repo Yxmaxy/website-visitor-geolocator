@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -103,12 +104,14 @@ function DomainCard({
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <LineChart className="w-4 h-4" />
-                                </Button>
+                                <Link to={`/statistics?domain=${domain.id}`}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                    >
+                                        <LineChart className="w-4 h-4" />
+                                    </Button>
+                                </Link>
                             </TooltipTrigger>
                             <TooltipContent>Domain statistics</TooltipContent>
                         </Tooltip>
