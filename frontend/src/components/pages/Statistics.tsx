@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, PaginationState } from "@tanstack/react-table";
@@ -177,7 +178,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     {icon}
                     {title}
                 </CardTitle>
@@ -288,7 +289,7 @@ function AreaStatisticsTable({ statistics, title, description, showFlag = false 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     {title}
                 </CardTitle>
                 <CardDescription>
@@ -584,7 +585,7 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     <Monitor className="h-5 w-5" />
                     {title}
                 </CardTitle>
@@ -688,7 +689,7 @@ function UserAgentTable({ userAgentDistribution, title, description }: UserAgent
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     {title}
                 </CardTitle>
                 <CardDescription>
@@ -787,7 +788,7 @@ function MapStatisticsSkeleton({ title, description, icon }: { title: string; de
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     {icon}
                     {title}
                 </CardTitle>
@@ -806,7 +807,7 @@ function AreaStatisticsTableSkeleton({ title, description }: { title: string; de
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle className="mb-2">{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="h-full">
@@ -839,7 +840,7 @@ function UserAgentPieChartSkeleton({ title, description }: { title: string; desc
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-2">
                     <Monitor className="h-5 w-5" />
                     {title}
                 </CardTitle>
@@ -858,7 +859,7 @@ function UserAgentTableSkeleton({ title, description }: { title: string; descrip
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle className="mb-2">{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="h-full">
@@ -889,6 +890,7 @@ function UserAgentTableSkeleton({ title, description }: { title: string; descrip
 
 // Main Statistics Component
 function Statistics() {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [domains, setDomains] = useState<Domain[]>([]);
     const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
     const [lastDays, setLastDays] = useState<number>(30);
@@ -914,6 +916,29 @@ function Statistics() {
             toast.error("Failed to load domains");
         }
     }, []);
+
+    // Handle domain selection from URL parameter
+    const handleDomainChange = useCallback((domain: Domain | null) => {
+        setSelectedDomain(domain);
+        
+        // Update URL parameters
+        if (domain) {
+            setSearchParams({ domain: domain.id.toString() });
+        } else {
+            setSearchParams({});
+        }
+    }, [setSearchParams]);
+
+    // Set initial domain from URL parameter
+    useEffect(() => {
+        const domainId = searchParams.get("domain");
+        if (domainId && domains.length > 0) {
+            const domain = domains.find(d => d.id.toString() === domainId);
+            if (domain) {
+                setSelectedDomain(domain);
+            }
+        }
+    }, [searchParams, domains]);
 
     // Load country statistics independently
     const loadCountryStatistics = useCallback(async () => {
@@ -985,7 +1010,7 @@ function Statistics() {
             <StatisticsHeader
                 selectedDomain={selectedDomain}
                 domains={domains}
-                onDomainChange={setSelectedDomain}
+                onDomainChange={handleDomainChange}
                 lastDays={lastDays}
                 onLastDaysChange={setLastDays}
             />
@@ -997,7 +1022,7 @@ function Statistics() {
                 ) : (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 mb-2">
                                 <Clock className="h-5 w-5" />
                                 Latest Visitors
                             </CardTitle>

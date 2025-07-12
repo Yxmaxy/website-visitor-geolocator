@@ -21,6 +21,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import NotificationToggle from "@/components/NotificationToggle";
 
@@ -37,6 +38,7 @@ import {
     Save,
     X,
     Timer,
+    Palette,
 } from "lucide-react";
 
 // Settings Header Component
@@ -136,7 +138,7 @@ function NotificationToggleCard({ disabled = false }: NotificationToggleCardProp
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Push Notifications</CardTitle>
+                <CardTitle className="mb-1.5">Push Notifications</CardTitle>
                 <CardDescription>
                     Enable or disable browser push notifications
                 </CardDescription>
@@ -158,7 +160,7 @@ function AccountCard({ onLogout, disabled = false }: AccountCardProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Account</CardTitle>
+                <CardTitle className="mb-1.5">Account</CardTitle>
                 <CardDescription>
                     Manage your account settings
                 </CardDescription>
@@ -216,7 +218,7 @@ function NotificationPreferencesCard({
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 mb-1.5">
                     Notification Preferences
                 </CardTitle>
                 <CardDescription>
@@ -229,7 +231,7 @@ function NotificationPreferencesCard({
                 {/* Notification Chance */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium flex items-center gap-2">
+                        <Label className="text-sm font-medium flex items-center gap-2 mb-1">
                             <Timer className="h-4 w-4" />
                             Notification Frequency
                         </Label>
@@ -265,7 +267,7 @@ function NotificationPreferencesCard({
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
                                 <Label className="text-sm font-medium">New Visitor Alerts</Label>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground mt-1">
                                     Get notified when new visitors arrive
                                 </p>
                             </div>
@@ -328,18 +330,18 @@ function NotificationPreferencesCard({
                 <div className="space-y-4">
                     <div className="flex justify-between">
                         <div className="space-y-1">
-                            <h4 className="text-sm font-medium flex items-center gap-2">
+                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
                                 <Clock className="h-4 w-4" />
                                 Quiet Hours
                             </h4>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mt-1">
                                 Set times when you don't want to receive notifications
                             </p>
                         </div>
                     </div>
                     
-                    <div className="flex items-end gap-4">
-                        <div className="space-y-2 flex-1">
+                    <div className="flex items-end gap-2">
+                        <div className="space-y-2 flex-1 mt-1.5">
                             <Label htmlFor="quiet-start">Start Time</Label>
                             <Input
                                 id="quiet-start"
@@ -351,7 +353,7 @@ function NotificationPreferencesCard({
                                 disabled={disabled}
                             />
                         </div>
-                        <div className="space-y-2 flex-1">
+                        <div className="space-y-2 flex-1 mt-1.5">
                             <Label htmlFor="quiet-end">End Time</Label>
                             <Input
                                 id="quiet-end"
@@ -410,6 +412,37 @@ function NotificationPreferencesCard({
                                 disabled={disabled}
                             />
                         </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+// Appearance Card Component
+
+function AppearanceCard() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <Palette className="h-5 w-5" />
+                    Appearance
+                </CardTitle>
+                <CardDescription>
+                    Customize the appearance of the application
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    <div className="flex items-end justify-between">
+                        <div className="space-y-1">
+                            <Label className="text-sm font-medium">Theme</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Choose your preferred theme
+                            </p>
+                        </div>
+                        <ThemeToggle />
                     </div>
                 </div>
             </CardContent>
@@ -509,6 +542,7 @@ function Settings() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
+                    <AppearanceCard />
                     <NotificationToggleCard disabled={saving} />
                     <AccountCard onLogout={handleLogout} disabled={saving} />
                 </div>
