@@ -37,6 +37,7 @@ interface DomainCardProps {
     onEdit: (domain: Domain) => void;
     onDelete: (domainId: number) => void;
     onShowScript: (domain: Domain) => void;
+    onCopyInput: (inputData: string, descriptor: string) => Promise<void>;
 }
 
 function DomainCard({
@@ -45,14 +46,15 @@ function DomainCard({
     onToggleApiKeyVisibility,
     onEdit,
     onDelete,
-    onShowScript
+    onShowScript,
+    onCopyInput
 }: DomainCardProps) {
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 mb-2">
                             {domain.domain}
                             <Badge variant={domain.active ? "default" : "secondary"}>
                                 {domain.active ? "Active" : "Inactive"}
@@ -108,7 +110,7 @@ function DomainCard({
                                     <LineChart className="w-4 h-4" />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Domain Statistics</TooltipContent>
+                            <TooltipContent>Domain statistics</TooltipContent>
                         </Tooltip>
                     </div>
                 </div>
@@ -116,7 +118,7 @@ function DomainCard({
             <CardContent>
                 <div className="space-y-3">
                     <div>
-                        <Label className="text-sm font-medium">API Key</Label>
+                        <Label className="text-sm font-medium mb-1">API Key</Label>
                         <div className="flex items-center gap-2 mt-1">
                             <Input
                                 type={showApiKeys[domain.id] ? "text" : "password"}
@@ -136,7 +138,7 @@ function DomainCard({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => copyToClipboard(domain.api_key)}
+                                        onClick={() => onCopyInput(domain.api_key, "API Key")}
                                     >
                                         <Copy className="w-4 h-4" />
                                     </Button>
@@ -218,16 +220,16 @@ function CreateDomainDialog({ isOpen, onOpenChange, onCreate }: CreateDomainDial
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Domain</DialogTitle>
+                    <DialogTitle className="mb-1">Add New Domain</DialogTitle>
                     <DialogDescription>
                         Add a new domain to track visitors.
                         You can optionally provide an IPInfo API token for enhanced geolocation data.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="space-y-6 mt-2">
                     <div>
-                        <Label htmlFor="domain" className="mb-1.5">Domain URL</Label>
+                        <Label htmlFor="domain" className="mb-2">Domain URL</Label>
                         <Input
                             id="domain"
                             placeholder="https://example.com"
@@ -240,7 +242,7 @@ function CreateDomainDialog({ isOpen, onOpenChange, onCreate }: CreateDomainDial
                         )}
                     </div>
                     <div>
-                        <Label htmlFor="ipinfo-token" className="mb-1.5">IPInfo API Token (Optional)</Label>
+                        <Label htmlFor="ipinfo-token" className="mb-2">IPInfo API Token (Optional)</Label>
                         <Input
                             id="ipinfo-token"
                             placeholder="Enter your IPInfo API token"
@@ -291,14 +293,13 @@ function EditDomainDialog({ isOpen, onOpenChange, domain, onUpdate }: EditDomain
     }, [domain]);
 
     const handleSubmit = async () => {
-        if (!domain || !form.domain) return;
-
         // Validate domain
-        const validation = validateDomain(form.domain);
+        const validation = validateDomain(form.domain || "");
         if (!validation.isValid) {
             setErrors({ domain: validation.error });
             return;
         }
+        if (!domain) return;
 
         setErrors({});
         await onUpdate(domain.id, form);
@@ -316,28 +317,28 @@ function EditDomainDialog({ isOpen, onOpenChange, domain, onUpdate }: EditDomain
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit Domain</DialogTitle>
+                    <DialogTitle className="mb-1">Edit Domain</DialogTitle>
                     <DialogDescription>
                         Update your domain settings and API tokens.
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="space-y-6 mt-2">
                     <div>
-                        <Label htmlFor="edit-domain" className="mb-1.5">Domain URL</Label>
+                        <Label htmlFor="edit-domain" className="mb-2">Domain URL</Label>
                         <Input
                             id="edit-domain"
                             placeholder="https://example.com"
                             value={form.domain}
                             onChange={event => handleDomainChange(event.target.value)}
-                            className={errors.domain ? "border-red-500" : ""}
+                            className={errors.domain ? "border-destructive" : ""}
                         />
                         {errors.domain && (
-                            <p className="text-sm text-red-500 mt-1">{errors.domain}</p>
+                            <p className="text-sm text-destructive mt-1">{errors.domain}</p>
                         )}
                     </div>
                     <div>
-                        <Label htmlFor="edit-ipinfo-token" className="mb-1.5">IPInfo API Token</Label>
+                        <Label htmlFor="edit-ipinfo-token" className="mb-2">IPInfo API Token</Label>
                         <Input
                             id="edit-ipinfo-token"
                             placeholder="Enter your IPInfo API token"
@@ -379,7 +380,7 @@ interface ScriptDialogProps {
     onOpenChange: (open: boolean) => void;
     domain: Domain | null;
     scriptData: ScriptData | null;
-    onCopyScript: (scriptTag: string) => Promise<void>;
+    onCopyScript: (inputData: string, descriptor: string) => Promise<void>;
 }
 
 function ScriptDialog({ isOpen, onOpenChange, domain, scriptData, onCopyScript }: ScriptDialogProps) {
@@ -387,16 +388,17 @@ function ScriptDialog({ isOpen, onOpenChange, domain, scriptData, onCopyScript }
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Tracking Script for {domain?.domain}</DialogTitle>
+                    <DialogTitle className="mb-1">Tracking Script for {domain?.domain}</DialogTitle>
                     <DialogDescription>
                         Copy this script and add it to your website to start tracking visitors.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-6 mt-2">
                     <div>
-                        <Label className="mb-1.5">Script Tag</Label>
+                        <Label htmlFor="script-tag" className="mb-2">Script Tag</Label>
                         <div className="flex items-center gap-2 mt-1">
                             <Textarea
+                                id="script-tag"
                                 value={scriptData?.script_tag || ''}
                                 readOnly
                                 className="font-mono text-sm"
@@ -404,7 +406,7 @@ function ScriptDialog({ isOpen, onOpenChange, domain, scriptData, onCopyScript }
                             />
                             <Button
                                 variant="outline"
-                                onClick={() => scriptData && onCopyScript(scriptData.script_tag || "")}
+                                onClick={() => scriptData && onCopyScript(scriptData.script_tag || "", "Script")}
                             >
                                 <Copy className="w-4 h-4" />
                             </Button>
@@ -412,32 +414,34 @@ function ScriptDialog({ isOpen, onOpenChange, domain, scriptData, onCopyScript }
                     </div>
                     <Separator />
                     <div>
-                        <Label className="mb-1.5">Script URL</Label>
+                        <Label htmlFor="script-url" className="mb-2">Script URL</Label>
                         <div className="flex items-center gap-2 mt-1">
                             <Input
+                                id="script-url"
                                 value={scriptData?.script_url || ''}
                                 readOnly
                                 className="font-mono text-sm"
                             />
                             <Button
                                 variant="outline"
-                                onClick={() => scriptData && copyToClipboard(scriptData.script_url || "")}
+                                onClick={() => scriptData && onCopyScript(scriptData.script_url || "", "Script URL")}
                             >
                                 <Copy className="w-4 h-4" />
                             </Button>
                         </div>
                     </div>
                     <div>
-                        <Label className="mb-1.5">API Key</Label>
+                        <Label htmlFor="api-key" className="mb-2">API Key</Label>
                         <div className="flex items-center gap-2 mt-1">
                             <Input
+                                id="api-key"
                                 value={scriptData?.api_key || ''}
                                 readOnly
                                 className="font-mono text-sm"
                             />
                             <Button
                                 variant="outline"
-                                onClick={() => scriptData && copyToClipboard(scriptData.api_key || "")}
+                                onClick={() => scriptData && onCopyScript(scriptData.api_key || "", "API Key")}
                             >
                                 <Copy className="w-4 h-4" />
                             </Button>
@@ -532,12 +536,12 @@ function DeleteDomainDialog({ isOpen, onOpenChange, domain, onDeleteConfirm }: D
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Domain</AlertDialogTitle>
+                    <AlertDialogTitle className="mb-1">Delete Domain</AlertDialogTitle>
                     <AlertDialogDescription>
                         Are you sure you want to delete the domain <b>{domain?.domain}</b>? This action cannot be undone.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
+                <AlertDialogFooter className="mt-2">
                     <AlertDialogCancel onClick={() => onOpenChange(false)}>
                         Cancel
                     </AlertDialogCancel>
@@ -629,12 +633,12 @@ function Domains() {
         }
     };
 
-    const handleCopyScript = async (scriptTag: string) => {
-        const success = await copyToClipboard(scriptTag);
+    const handleCopyInput = async (inputData: string, descriptor: string) => {
+        const success = await copyToClipboard(inputData);
         if (success) {
-            toast.success("Script copied to clipboard");
+            toast.success(`${descriptor} copied to clipboard`);
         } else {
-            toast.error("Failed to copy script");
+            toast.error(`Failed to copy ${descriptor}`);
         }
     };
 
@@ -688,6 +692,7 @@ function Domains() {
                                 setIsDeleteDialogOpen(true);
                             }}
                             onShowScript={handleShowScript}
+                            onCopyInput={handleCopyInput}
                         />
                     ))}
                 </div>
@@ -724,7 +729,7 @@ function Domains() {
                 onOpenChange={setIsScriptDialogOpen}
                 domain={selectedDomainForScript}
                 scriptData={scriptData || null}
-                onCopyScript={handleCopyScript}
+                onCopyScript={handleCopyInput}
             />
         </TooltipProvider>
     );
