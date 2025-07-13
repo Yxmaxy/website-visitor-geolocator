@@ -39,6 +39,8 @@ import {
     X,
     Timer,
     Palette,
+    User,
+    BellDot,
 } from "lucide-react";
 
 // Settings Header Component
@@ -138,7 +140,10 @@ function NotificationToggleCard({ disabled = false }: NotificationToggleCardProp
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="mb-1.5">Push Notifications</CardTitle>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <BellRing className="h-5 w-5" />
+                    Push Notifications
+                </CardTitle>
                 <CardDescription>
                     Enable or disable browser push notifications
                 </CardDescription>
@@ -160,7 +165,10 @@ function AccountCard({ onLogout, disabled = false }: AccountCardProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="mb-1.5">Account</CardTitle>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <User className="h-5 w-5" />
+                    Account
+                </CardTitle>
                 <CardDescription>
                     Manage your account settings
                 </CardDescription>
@@ -219,6 +227,7 @@ function NotificationPreferencesCard({
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <BellDot className="h-5 w-5" />
                     Notification Preferences
                 </CardTitle>
                 <CardDescription>

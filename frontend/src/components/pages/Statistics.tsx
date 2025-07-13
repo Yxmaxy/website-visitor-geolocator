@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, PaginationState } from "@tanstack/react-table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { MapContainer, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -43,12 +43,12 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
     const validDays = [1, 7, 14, 30, 60, 90, 180, 365];
 
     return (
-        <div className="flex items-center justify-between mb-6 h-12">
+        <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6">
             <div className="flex items-center gap-2">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Statistics</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap justify-end">
 
                 <div className="flex items-center gap-2">
                     <Select
@@ -153,9 +153,9 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
         const intensity = visitorCount / (maxVisitorCount * 1.5) + 0.1;
         return {
             weight: 0.25,
-            color: "#000",
+            color: "var(--muted-foreground)",
             opacity: 1,
-            fillColor: "#000",
+            fillColor: "var(--primary)",
             fillOpacity: intensity,
         };
     };
@@ -401,7 +401,7 @@ function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
     return (
         <div className="[& *]:outline-transparent">
             <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
+                <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                         dataKey="date" 
@@ -411,8 +411,14 @@ function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
                     />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="count" fill="#000000aa" />
-                </BarChart>
+                    <Line 
+                        type="monotone" 
+                        dataKey="count" 
+                        stroke="var(--chart-1)" 
+                        strokeWidth={2}
+                        dot={false}
+                    />
+                </LineChart>
             </ResponsiveContainer>
         </div>
     );
@@ -570,7 +576,7 @@ interface UserAgentPieChartProps {
 }
 
 function UserAgentPieChart({ userAgentDistribution, title, description }: UserAgentPieChartProps) {
-    const COLORS = ["#374151", "#4B5563", "#6B7280", "#9CA3AF", "#D1D5DB", "#E5E7EB", "#F3F4F6", "#F9FAFB", "#111827", "#1F2937"];
+    const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
     const data = userAgentDistribution.map((item, index) => ({
         name: item.browser,
@@ -595,14 +601,13 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
             </CardHeader>
             <CardContent>
                 <div className="[& *]:outline-transparent">
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
                                 data={data}
                                 cx="50%"
                                 cy="50%"
                                 labelLine={false}
-                                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                                 outerRadius={80}
                                 fill="#000000aa"
                                 dataKey="value"
@@ -614,6 +619,19 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
                             <Tooltip />
                         </PieChart>
                     </ResponsiveContainer>
+                    
+                    {/* Custom Legend */}
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {data.map((entry, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                                <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: entry.color }}
+                                />
+                                <span className="truncate">{entry.name}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </CardContent>
         </Card>
