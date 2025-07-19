@@ -11,10 +11,10 @@ function AppSidebar() {
         <Sidebar collapsible="icon" className="z-20">
             <SidebarContent>
                 <SidebarMenu>
-                    <SidebarHeader className="border-b border-border bg-primary/60 text-primary-foreground">
+                    <SidebarHeader className="border-b border-border bg-sidebar-header/60 text-primary-foreground">
                         <div className="flex items-center gap-2 py-1">
                             <img src="/logo.svg" alt="Website Visitor Geolocator" className="w-3.5 h-3.5" />
-                            <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap">Website Visitor Geolocator</span>
+                            <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sidebar-header-foreground">Website Visitor Geolocator</span>
                         </div>
                     </SidebarHeader>
 
