@@ -1,45 +1,41 @@
-// Service Worker for push notifications
-const CACHE_NAME = "website-visitor-geolocator-v1";
-const urlsToCache = [
-    "/",
-    "/static/css/",
-    "/static/js/",
-    "/static/img/"
-];
+import { clientsClaim } from "workbox-core"
+import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching"
 
-// Install event
+const VERSION = "0.0.0";
+const DEBUG = import.meta.env.MODE === "development";
+
+clientsClaim();
+
+cleanupOutdatedCaches();
+precacheAndRoute(self.__WB_MANIFEST);
+
 self.addEventListener("install", (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(urlsToCache);
-            })
-    );
+    if (DEBUG) console.log(`Service worker installing version ${VERSION}`);
+    self.skipWaiting();
 });
 
-// Fetch event
+self.addEventListener("activate", (event) => {
+    if (DEBUG) console.log(`Service worker activating version ${VERSION}`);
+    event.waitUntil(clientsClaim());
+});
+
+// cache first strategy
 self.addEventListener("fetch", (event) => {
+    if (event.request.method !== "GET") return;
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
-                // Return cached version or fetch from network
                 return response || fetch(event.request);
             })
     );
 });
 
-// Push event - handle incoming push notifications
 self.addEventListener("push", (event) => {
-    if (event.data) {
-        console.log("Event data methods:", Object.getOwnPropertyNames(event.data));
-        console.log("Event data text:", event.data.text ? event.data.text() : "no text method");
-    }
-
     let notificationData = {
         title: "New Notification",
         body: "You have a new notification",
-        icon: "/static/img/notification-icon.png",  // TODO: add icons
-        badge: "/static/img/badge-icon.png",
+        icon: "/logo.svg",
+        badge: "/logo.svg",
         data: {}
     };
 
@@ -60,19 +56,19 @@ self.addEventListener("push", (event) => {
         body: notificationData.body,
         icon: notificationData.icon,
         badge: notificationData.badge,
-        vibrate: notificationData.vibrate,
+        vibrate: notificationData.vibrate || [200, 100, 200],
         data: notificationData.data,
-        // requireInteraction: true,
+        requireInteraction: false,
         // actions: [
         //     {
         //         action: "view",
         //         title: "View Details",
-        //         icon: "/static/img/view-icon.png"
+        //         icon: "/logo.svg"
         //     },
         //     {
         //         action: "dismiss",
         //         title: "Dismiss",
-        //         icon: "/static/img/dismiss-icon.png"
+        //         icon: "/logo.svg"
         //     }
         // ]
     };
@@ -82,14 +78,14 @@ self.addEventListener("push", (event) => {
     );
 });
 
-// Notification click event
+// // Notification click event
 // self.addEventListener("notificationclick", (event) => {
 //     console.log("Notification clicked:", event);
 
 //     event.notification.close();
 
 //     if (event.action === "view") {
-//         // Open the dashboard or specific page
+//         // Open the dashboard
 //         event.waitUntil(
 //             clients.openWindow("/dashboard")
 //         );

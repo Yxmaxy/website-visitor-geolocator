@@ -21,8 +21,9 @@ class PushNotificationService {
                 return false;
             }
 
-            // Register service worker
-            this.registration = await navigator.serviceWorker.register("/sw.js");
+            // Register service worker - vite-plugin-pwa will handle the registration
+            // The service worker will be automatically registered by the plugin
+            this.registration = await navigator.serviceWorker.ready;
 
             // Check if we already have a subscription
             this.subscription = await this.registration.pushManager.getSubscription();
