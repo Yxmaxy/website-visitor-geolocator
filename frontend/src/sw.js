@@ -3,6 +3,7 @@ import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching"
 
 const VERSION = "0.0.0";
 const DEBUG = import.meta.env.MODE === "development";
+const CACHE_NAME = `wvg-cache-v1 ${VERSION}`;
 
 clientsClaim();
 
@@ -19,13 +20,22 @@ self.addEventListener("activate", (event) => {
     event.waitUntil(clientsClaim());
 });
 
-// cache first strategy
+// network first strategy
 self.addEventListener("fetch", (event) => {
     if (event.request.method !== "GET") return;
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                return response || fetch(event.request);
+                // Clone the response and store it in the cache
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, responseClone);
+                });
+                return response;
+            })
+            .catch(() => {
+                // If network fails, try to get it from the cache
+                return caches.match(event.request);
             })
     );
 });
