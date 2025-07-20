@@ -27,7 +27,7 @@ import { DomainApiService } from "@/services/apiDomain";
 import type { Domain, DomainCreate, DomainUpdate } from "@/services/apiDomain";
 import { copyToClipboard } from "@/services/clipboard";
 
-import { Plus, Edit, Trash2, Copy, Eye, EyeOff, ExternalLink, LineChart, GlobeIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Eye, EyeOff, Code2, LineChart, GlobeIcon } from "lucide-react";
 
 
 // Domain Card Component
@@ -73,7 +73,7 @@ function DomainCard({
                                     size="sm"
                                     onClick={() => onShowScript(domain)}
                                 >
-                                    <ExternalLink className="w-4 h-4" />
+                                    <Code2 className="w-4 h-4" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>View tracking script</TooltipContent>
