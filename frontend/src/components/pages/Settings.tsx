@@ -24,6 +24,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import NotificationToggle from "@/components/NotificationToggle";
+import InstallButton from "@/components/InstallButton";
 
 import SettingsApiService from "@/services/apiSettings";
 import type { NotificationPreferences } from "@/services/apiSettings";
@@ -41,6 +42,7 @@ import {
     Palette,
     User,
     BellDot,
+    Download,
 } from "lucide-react";
 
 // Settings Header Component
@@ -459,6 +461,27 @@ function AppearanceCard() {
     );
 }
 
+// Install Button Card Component
+
+function InstallButtonCard() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <Download className="h-5 w-5" />
+                    Install PWA
+                </CardTitle>
+                <CardDescription>
+                    Download the app to your device to get the best experience
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <InstallButton className="w-full" />
+            </CardContent>
+        </Card>
+    );
+}
+
 // Main Settings Component
 function Settings() {
     const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences | null>(null);
@@ -551,6 +574,7 @@ function Settings() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
+                    <InstallButtonCard />
                     <AppearanceCard />
                     <NotificationToggleCard disabled={saving} />
                     <AccountCard onLogout={handleLogout} disabled={saving} />
