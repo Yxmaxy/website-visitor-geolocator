@@ -51,6 +51,27 @@ export class TimeoutError extends Error {
     }
 }
 
+export class AuthenticationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "AuthenticationError";
+    }
+}
+
+// Authentication handling
+function handleAuthenticationError(status: number, url: string): void {
+    if (status === 403 || status === 401) {
+        const loginUrl = import.meta.env.VITE_LOGIN_URL;
+        if (loginUrl) {
+            // Redirect to login page
+            window.location.href = loginUrl;
+        } else {
+            console.error('VITE_LOGIN_URL is not configured');
+        }
+        throw new AuthenticationError(`Authentication required. Status: ${status}`);
+    }
+}
+
 // Utility Functions
 export function getCookie(name: string): string | null {
     let cookieValue: string | null = null;
@@ -89,6 +110,9 @@ function buildHeaders(customHeaders?: Record<string, string>): Record<string, st
 
 async function handleResponse<T>(response: Response, url: string): Promise<T> {
     if (!response.ok) {
+        // Handle authentication errors first
+        handleAuthenticationError(response.status, url);
+        
         const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         throw new ApiError(errorMessage, response.status, response.statusText, url);
     }
@@ -129,7 +153,7 @@ export class ApiService {
             
             return await handleResponse<T>(response, url);
         } catch (error) {
-            if (error instanceof ApiError) {
+            if (error instanceof ApiError || error instanceof AuthenticationError) {
                 throw error;
             }
             
@@ -160,7 +184,7 @@ export class ApiService {
             
             return await handleResponse<T>(response, url);
         } catch (error) {
-            if (error instanceof ApiError) {
+            if (error instanceof ApiError || error instanceof AuthenticationError) {
                 throw error;
             }
             
@@ -191,7 +215,7 @@ export class ApiService {
             
             return await handleResponse<T>(response, url);
         } catch (error) {
-            if (error instanceof ApiError) {
+            if (error instanceof ApiError || error instanceof AuthenticationError) {
                 throw error;
             }
             
@@ -220,11 +244,14 @@ export class ApiService {
             });
             
             if (!response.ok) {
+                // Handle authentication errors first
+                handleAuthenticationError(response.status, url);
+                
                 const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                 throw new ApiError(errorMessage, response.status, response.statusText, url);
             }
         } catch (error) {
-            if (error instanceof ApiError) {
+            if (error instanceof ApiError || error instanceof AuthenticationError) {
                 throw error;
             }
             
@@ -252,5 +279,10 @@ export class ApiService {
     // Utility method to check if an error is a TimeoutError
     static isTimeoutError(error: unknown): error is TimeoutError {
         return error instanceof TimeoutError;
+    }
+
+    // Utility method to check if an error is an AuthenticationError
+    static isAuthenticationError(error: unknown): error is AuthenticationError {
+        return error instanceof AuthenticationError;
     }
 }
