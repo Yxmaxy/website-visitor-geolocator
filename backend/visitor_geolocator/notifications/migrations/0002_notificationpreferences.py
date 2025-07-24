@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
             "website_visitor_geolocator_core",
             "0004_alter_domain_geolocation_api_token_ipinfo",
         ),
-        ("notifications", "0001_initial"),
+        ("website_visitor_geolocator_notifications", "0001_initial"),
     ]
 
     operations = [
@@ -31,10 +31,13 @@ class Migration(migrations.Migration):
                     "notification_chance",
                     models.IntegerField(
                         default=100,
-                        help_text="Chance of receiving notifications (0-100)",
+                        help_text="Chance of receiving website_visitor_geolocator_notifications (0-100)",
                     ),
                 ),
-                ("new_visitor_notifications", models.BooleanField(default=True)),
+                (
+                    "new_visitor_website_visitor_geolocator_notifications",
+                    models.BooleanField(default=True),
+                ),
                 ("quiet_hours_start", models.TimeField(blank=True, null=True)),
                 ("quiet_hours_end", models.TimeField(blank=True, null=True)),
                 ("notification_vibration", models.BooleanField(default=True)),

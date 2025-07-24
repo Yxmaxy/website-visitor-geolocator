@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("notifications", "0002_notificationpreferences"),
+        ("website_visitor_geolocator_notifications", "0002_notificationpreferences"),
     ]
 
     operations = [
         migrations.AddField(
             model_name="notificationpreferences",
-            name="daily_summary_notifications",
+            name="daily_summary_website_visitor_geolocator_notifications",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
             model_name="notificationpreferences",
-            name="weekly_summary_notifications",
+            name="weekly_summary_website_visitor_geolocator_notifications",
             field=models.BooleanField(default=False),
         ),
     ]
