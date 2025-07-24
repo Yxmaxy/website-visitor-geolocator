@@ -65,8 +65,8 @@ You can access the admin interface at `http://localhost:8000/admin/`.
     ```
     npm run dev
     ```
-
-You can access the app at `http://localhost:5173/`.
+4. Log in to the admin interface at `http://localhost:8000/admin/`, to also log into the frontend.
+5. You can access the app at `http://localhost:5173/`.
 
 #### Optional - test a notification on website visit
 

@@ -15,7 +15,7 @@ from visitor_geolocator.statistics.serializers import (
     UserAgentDistributionSerializer,
     VisitorSerializer,
 )
-from visitor_geolocator.core.services import DomainService
+from visitor_geolocator.core.services import DomainService, UserService
 
 
 class AreaGeometriesAPIView(APIView):
@@ -81,9 +81,8 @@ class AreaStatisticsAPIView(APIView):
         days = serializer.validated_data.get("days", 30)
         level = serializer.validated_data.get("level", LevelChoices.COUNTRY)
 
-        domains = DomainService.get_owner_domains(
-            request.user.website_visitor_geolocator_user
-        )
+        wvg_user = UserService.get_wvg_user(request.user)
+        domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
@@ -108,9 +107,8 @@ class LatestVisitorsAPIView(APIView):
         domain_id = serializer.validated_data.get("domain_id")
         days = serializer.validated_data.get("days", 30)
 
-        domains = DomainService.get_owner_domains(
-            request.user.website_visitor_geolocator_user
-        )
+        wvg_user = UserService.get_wvg_user(request.user)
+        domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
@@ -134,9 +132,8 @@ class UserAgentDistributionAPIView(APIView):
         domain_id = serializer.validated_data.get("domain_id")
         days = serializer.validated_data.get("days", 30)
 
-        domains = DomainService.get_owner_domains(
-            request.user.website_visitor_geolocator_user
-        )
+        wvg_user = UserService.get_wvg_user(request.user)
+        domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
