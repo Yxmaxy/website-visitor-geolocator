@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
 
 from visitor_geolocator.core.models import Domain, WebsiteVisitorGeolocatorUser
+from visitor_geolocator.core.services import UserService
 from visitor_geolocator.frontend.serializers import UserSerializer, DomainSerializer
 from visitor_geolocator.notifications.models import NotificationPreferences
 from visitor_geolocator.notifications.serializers import (
@@ -37,13 +38,13 @@ class DomainListCreateAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         """Get all domains for the authenticated user."""
-        return Domain.objects.filter(
-            created_by=self.request.user.website_visitor_geolocator_user
-        )
+        wvg_user = UserService.get_wvg_user(self.request.user)
+        return Domain.objects.filter(created_by=wvg_user)
 
     def perform_create(self, serializer):
         """Set the created_by field when creating a domain"""
-        serializer.save(created_by=self.request.user.website_visitor_geolocator_user)
+        wvg_user = UserService.get_wvg_user(self.request.user)
+        serializer.save(created_by=wvg_user)
 
 
 class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -54,11 +55,8 @@ class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         """Get the domain object or return 404"""
-        return get_object_or_404(
-            Domain,
-            id=self.kwargs["pk"],
-            created_by=self.request.user.website_visitor_geolocator_user,
-        )
+        wvg_user = UserService.get_wvg_user(self.request.user)
+        return get_object_or_404(Domain, id=self.kwargs["pk"], created_by=wvg_user)
 
 
 class NotificationPreferencesAPIView(APIView):

@@ -5,9 +5,18 @@ import requests
 from django.core.cache import cache
 from django.http.request import HttpRequest
 from django.contrib.gis.geos import Point
+from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet
 
 from visitor_geolocator.core.models import Domain, Visitor, WebsiteVisitorGeolocatorUser
+
+
+# pylint: disable=too-few-public-methods
+class UserService:
+    @staticmethod
+    def get_wvg_user(user: AbstractUser) -> WebsiteVisitorGeolocatorUser:
+        wvg_user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=user)
+        return wvg_user
 
 
 class DomainService:

@@ -8,6 +8,7 @@ from pywebpush import webpush, WebPushException
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
+from visitor_geolocator.core.services import UserService
 from visitor_geolocator.core.models import Visitor
 from visitor_geolocator.notifications.models import (
     PushSubscription,
@@ -146,10 +147,11 @@ class NotificationService:
         user: AbstractUser, endpoint: str, p256dh: str, auth: str
     ) -> PushSubscription:
         """Delete existing subscription and create a new one"""
-        NotificationService.delete_subscription(user.website_visitor_geolocator_user)
+        wvg_user = UserService.get_wvg_user(user)
+        NotificationService.delete_subscription(wvg_user)
 
         subscription = PushSubscription.objects.create(
-            website_visitor_geolocator_user=user.website_visitor_geolocator_user,
+            website_visitor_geolocator_user=wvg_user,
             endpoint=endpoint,
             p256dh=p256dh,
             auth=auth,
@@ -161,8 +163,9 @@ class NotificationService:
     def delete_subscription(user: AbstractUser) -> bool:
         """Delete push subscription for a user"""
         try:
+            wvg_user = UserService.get_wvg_user(user)
             PushSubscription.objects.filter(
-                website_visitor_geolocator_user=user.website_visitor_geolocator_user
+                website_visitor_geolocator_user=wvg_user
             ).delete()
             return True
         except Exception:  # pylint: disable=broad-exception-caught
@@ -172,8 +175,9 @@ class NotificationService:
     def get_user_subscription(user: AbstractUser) -> Optional[PushSubscription]:
         """Get push subscription for a user"""
         try:
+            wvg_user = UserService.get_wvg_user(user)
             return PushSubscription.objects.get(
-                website_visitor_geolocator_user=user.website_visitor_geolocator_user
+                website_visitor_geolocator_user=wvg_user
             )
         except PushSubscription.DoesNotExist:
             return None
