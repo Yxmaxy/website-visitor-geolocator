@@ -50,7 +50,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "visitor_geolocator.core.middleware.VisitorCorsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -145,6 +144,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# Exclude visitor tracking endpoint from corsheaders middleware
+CORS_URLS_REGEX = r"^(?!.*visitor/).*$"
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [

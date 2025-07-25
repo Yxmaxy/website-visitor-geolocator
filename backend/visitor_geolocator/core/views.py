@@ -9,6 +9,14 @@ from visitor_geolocator.core.services import DomainService
 from visitor_geolocator.notifications.services import NotificationService
 
 
+def _add_cors_headers(response: HttpResponse) -> HttpResponse:
+    """Add CORS headers to the response for visitor tracking endpoint."""
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, X-Access-Token"
+    return response
+
+
 @require_http_methods(["GET"])
 def tracking_script(request: HttpRequest):
     """Serves the tracking script that will be embedded on client websites."""
@@ -36,7 +44,7 @@ def track_visitor(request: HttpRequest):
     """Creates a visitor record based on the request."""
 
     if request.method == "OPTIONS":
-        return HttpResponse(status=200)
+        return _add_cors_headers(HttpResponse(status=200))
 
     # get domain and visitor data from request
     origin = request.headers.get("Origin")
@@ -44,14 +52,18 @@ def track_visitor(request: HttpRequest):
     domain = DomainService.get_domain(origin, api_key)
 
     if not domain:
-        return HttpResponse(status=403, content="Invalid credentials")
+        return _add_cors_headers(
+            HttpResponse(status=403, content="Invalid credentials")
+        )
 
     visitor, success = DomainService.save_domain_visitor(domain, request)
     if not success:
-        return HttpResponse(status=500, content="Failed to save visitor")
+        return _add_cors_headers(
+            HttpResponse(status=500, content="Failed to save visitor")
+        )
 
     # Send notification for new visitor
     if settings.WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_ENABLED:
         NotificationService.handle_new_visitor(visitor)
 
-    return HttpResponse(status=200)
+    return _add_cors_headers(HttpResponse(status=200))
