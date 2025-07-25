@@ -55,7 +55,7 @@ class PushNotificationService {
                 throw new Error("Notification permission denied");
             }
 
-            const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+            const vapidPublicKey = import.meta.env.VITE_WEBSITE_VISITOR_GEOLOCATOR_VAPID_PUBLIC_KEY;
             if (!vapidPublicKey) {
                 throw new Error("VAPID public key not configured in .env");
             }
