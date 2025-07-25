@@ -91,9 +91,9 @@ class NotificationService:
         """Send a push notification to a specific subscription using pywebpush"""
         try:
             if (
-                not settings.VAPID_PRIVATE_KEY
-                or not settings.VAPID_PUBLIC_KEY
-                or not settings.VAPID_EMAIL
+                not settings.WEBSITE_VISITOR_GEOLOCATOR_VAPID_PRIVATE_KEY
+                or not settings.WEBSITE_VISITOR_GEOLOCATOR_VAPID_PUBLIC_KEY
+                or not settings.WEBSITE_VISITOR_GEOLOCATOR_VAPID_EMAIL
             ):
                 raise ValueError("VAPID keys or email are not set")
 
@@ -126,9 +126,9 @@ class NotificationService:
             webpush(
                 subscription_info,
                 payload,
-                vapid_private_key=settings.VAPID_PRIVATE_KEY,
+                vapid_private_key=settings.WEBSITE_VISITOR_GEOLOCATOR_VAPID_PRIVATE_KEY,
                 vapid_claims={
-                    "sub": f"mailto:{settings.VAPID_EMAIL}",
+                    "sub": f"mailto:{settings.WEBSITE_VISITOR_GEOLOCATOR_VAPID_EMAIL}",
                 },
             )
             return True
