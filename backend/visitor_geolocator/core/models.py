@@ -7,6 +7,16 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
+class WebsiteVisitorGeolocatorPermissions(models.Model):
+    class Meta:
+        permissions = [
+            (
+                "website_visitor_geolocator_enabled",
+                "Is the website visitor geolocator enabled for the user",
+            ),
+        ]
+
+
 class WebsiteVisitorGeolocatorUser(models.Model):
     class Meta:
         db_table = "website_visitor_geolocator_core_user"

@@ -13,12 +13,15 @@ from visitor_geolocator.notifications.models import NotificationPreferences
 from visitor_geolocator.notifications.serializers import (
     NotificationPreferencesSerializer,
 )
+from visitor_geolocator.frontend.permissions import (
+    HasWebsiteVisitorGeolocatorPermission,
+)
 
 
 class UserAPIView(APIView):
     """View for user operations"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request):
         """Retrieves the user from the request."""
@@ -31,7 +34,7 @@ class UserAPIView(APIView):
 class DomainListCreateAPIView(ListCreateAPIView):
     """View for listing and creating domains"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
@@ -50,7 +53,7 @@ class DomainListCreateAPIView(ListCreateAPIView):
 class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """View for retrieving, updating, and deleting a specific domain"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
     serializer_class = DomainSerializer
 
     def get_object(self):
@@ -62,7 +65,7 @@ class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 class NotificationPreferencesAPIView(APIView):
     """View for notification preferences operations"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request):
         """Get user notification preferences"""
@@ -93,7 +96,7 @@ class NotificationPreferencesAPIView(APIView):
 class LogoutView(APIView):
     """View for user logout"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request):
         """Logout the user"""

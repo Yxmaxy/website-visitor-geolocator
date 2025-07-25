@@ -103,10 +103,27 @@ function MapBoundsFitter({ geometries }: { geometries: AreaGeometries | null }) 
     const map = useMap();
 
     function fitBounds() {
-        if (geometries) {
-            const geoJsonLayer = L.geoJSON(geometries);
-            const bounds = geoJsonLayer.getBounds();
-            map.fitBounds(bounds, { padding: [0, 0] });
+        if (geometries && geometries.features && geometries.features.length > 0) {
+            try {
+                const geoJsonLayer = L.geoJSON(geometries);
+                const bounds = geoJsonLayer.getBounds();
+
+                if (bounds.isValid() && 
+                    bounds.getNorth() !== bounds.getSouth() && 
+                    bounds.getEast() !== bounds.getWest()) {
+                    map.fitBounds(bounds, { padding: [0, 0] });
+                } else {
+                    // fallback
+                    map.setView([0, 0], 2);
+                }
+            } catch (error) {
+                console.warn("Failed to fit bounds:", error);
+                // fallback
+                map.setView([0, 0], 2);
+            }
+        } else {
+            // fallback
+            map.setView([0, 0], 2);
         }
     }
 

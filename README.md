@@ -44,7 +44,11 @@ To run the example app, do the following:
     ```
     python manage.py createsuperuser
     ```
-6. Run the server or install the `visitor_geolocator` package using `pip install -e .`
+6. Import the statistics areas
+    ```
+    python manage.py import_areas
+    ```
+7. Run the server or install the `visitor_geolocator` package using `pip install -e .`
     ```
     python manage.py runserver
     ```
