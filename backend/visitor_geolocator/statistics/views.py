@@ -16,12 +16,15 @@ from visitor_geolocator.statistics.serializers import (
     VisitorSerializer,
 )
 from visitor_geolocator.core.services import DomainService, UserService
+from visitor_geolocator.frontend.permissions import (
+    HasWebsiteVisitorGeolocatorPermission,
+)
 
 
 class AreaGeometriesAPIView(APIView):
     """API view for area geometries only"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request: Request):
         """Get area geometries for a specific level"""
@@ -70,7 +73,7 @@ class AreaGeometriesAPIView(APIView):
 class AreaStatisticsAPIView(APIView):
     """API view for area-based visitor statistics"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request: Request):
         """Get visitor statistics by area"""
@@ -97,7 +100,7 @@ class AreaStatisticsAPIView(APIView):
 class LatestVisitorsAPIView(APIView):
     """API view for latest visitors"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request):
         """Get latest visitors"""
@@ -122,7 +125,7 @@ class LatestVisitorsAPIView(APIView):
 class UserAgentDistributionAPIView(APIView):
     """API view for user agent distribution"""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request):
         """Get user agent distribution"""
