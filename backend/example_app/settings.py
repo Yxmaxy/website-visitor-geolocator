@@ -41,8 +41,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    # third party
     "corsheaders",
     "rest_framework",
+    # project apps
+    "simple_notifications",
     "visitor_geolocator.core",
     "visitor_geolocator.notifications",
     "visitor_geolocator.frontend",
@@ -154,16 +157,14 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
+# Django Simple Notifications
+NOTIFICATIONS_VAPID_PUBLIC_KEY = os.getenv("NOTIFICATIONS_VAPID_PUBLIC_KEY")
+NOTIFICATIONS_VAPID_PRIVATE_KEY = os.getenv("NOTIFICATIONS_VAPID_PRIVATE_KEY")
+NOTIFICATIONS_VAPID_EMAIL = os.getenv("NOTIFICATIONS_VAPID_EMAIL")
+
 # Website Visitor Geolocator
 WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_ENABLED = True
 WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOKIE_EXPIRATION = 1 * 60 * 60  # 1 hour
-
-WEBSITE_VISITOR_GEOLOCATOR_VAPID_PUBLIC_KEY = os.getenv(
-    "WEBSITE_VISITOR_GEOLOCATOR_VAPID_PUBLIC_KEY"
-)
-WEBSITE_VISITOR_GEOLOCATOR_VAPID_PRIVATE_KEY = os.getenv(
-    "WEBSITE_VISITOR_GEOLOCATOR_VAPID_PRIVATE_KEY"
-)
-WEBSITE_VISITOR_GEOLOCATOR_VAPID_EMAIL = os.getenv(
-    "WEBSITE_VISITOR_GEOLOCATOR_VAPID_EMAIL"
+WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_APP_NAME = os.getenv(
+    "WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_APP_NAME"
 )

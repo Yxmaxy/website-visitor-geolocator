@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
 
 from visitor_geolocator.core.services import DomainService
-from visitor_geolocator.notifications.services import NotificationService
+from visitor_geolocator.notifications.services import VisitorNotificationService
 
 
 def _add_cors_headers(response: HttpResponse) -> HttpResponse:
@@ -64,6 +64,6 @@ def track_visitor(request: HttpRequest):
 
     # Send notification for new visitor
     if settings.WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_ENABLED:
-        NotificationService.handle_new_visitor(visitor)
+        VisitorNotificationService.handle_new_visitor(visitor)
 
     return _add_cors_headers(HttpResponse(status=200))

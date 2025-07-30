@@ -18,6 +18,7 @@ export interface RequestConfig {
     timeout?: number;
     headers?: Record<string, string>;
     signal?: AbortSignal;
+    useNotificationUrl?: boolean;
 }
 
 // Custom Error Classes
@@ -59,7 +60,7 @@ export class AuthenticationError extends Error {
 }
 
 // Authentication handling
-function handleAuthenticationError(status: number, url: string): void {
+function handleAuthenticationError(status: number): void {
     if (status === 403 || status === 401) {
         const loginUrl = import.meta.env.VITE_LOGIN_URL;
         if (loginUrl) {
@@ -111,7 +112,7 @@ function buildHeaders(customHeaders?: Record<string, string>): Record<string, st
 async function handleResponse<T>(response: Response, url: string): Promise<T> {
     if (!response.ok) {
         // Handle authentication errors first
-        handleAuthenticationError(response.status, url);
+        handleAuthenticationError(response.status);
         
         const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         throw new ApiError(errorMessage, response.status, response.statusText, url);
@@ -137,6 +138,7 @@ async function handleResponse<T>(response: Response, url: string): Promise<T> {
 export class ApiService {
     private static readonly DEFAULT_TIMEOUT = 10000; // 10 seconds
     private static readonly BASE_URL = import.meta.env.VITE_BASE_BACKEND_API_URL;
+    private static readonly NOTIFICATIONS_URL = import.meta.env.VITE_NOTIFICATIONS_URL;
 
     static async get<T = any>(url: string, config?: RequestConfig): Promise<T> {
         const timeout = config?.timeout ?? this.DEFAULT_TIMEOUT;
@@ -144,7 +146,7 @@ export class ApiService {
         const headers = buildHeaders(config?.headers);
 
         try {
-            const response = await fetch(`${this.BASE_URL}${url}`, {
+            const response = await fetch(`${config?.useNotificationUrl ? this.NOTIFICATIONS_URL : this.BASE_URL}${url}`, {
                 method: "GET",
                 credentials: "include",
                 headers,
@@ -174,7 +176,7 @@ export class ApiService {
         const headers = buildHeaders(config?.headers);
 
         try {
-            const response = await fetch(`${this.BASE_URL}${url}`, {
+            const response = await fetch(`${config?.useNotificationUrl ? this.NOTIFICATIONS_URL : this.BASE_URL}${url}`, {
                 method: "POST",
                 credentials: "include",
                 headers,
@@ -205,7 +207,7 @@ export class ApiService {
         const headers = buildHeaders(config?.headers);
 
         try {
-            const response = await fetch(`${this.BASE_URL}${url}`, {
+            const response = await fetch(`${config?.useNotificationUrl ? this.NOTIFICATIONS_URL : this.BASE_URL}${url}`, {
                 method: "PUT",
                 credentials: "include",
                 headers,
@@ -236,7 +238,7 @@ export class ApiService {
         const headers = buildHeaders(config?.headers);
 
         try {
-            const response = await fetch(`${this.BASE_URL}${url}`, {
+            const response = await fetch(`${config?.useNotificationUrl ? this.NOTIFICATIONS_URL : this.BASE_URL}${url}`, {
                 method: "DELETE",
                 credentials: "include",
                 headers,
@@ -245,7 +247,7 @@ export class ApiService {
             
             if (!response.ok) {
                 // Handle authentication errors first
-                handleAuthenticationError(response.status, url);
+                handleAuthenticationError(response.status);
                 
                 const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                 throw new ApiError(errorMessage, response.status, response.statusText, url);

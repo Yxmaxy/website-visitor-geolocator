@@ -25,8 +25,10 @@ class UserAPIView(APIView):
 
     def get(self, request):
         """Retrieves the user from the request."""
-        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
-        serializer = UserSerializer(data={"user": user.user.email})
+        wvg_user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(
+            user=request.user
+        )
+        serializer = UserSerializer(data={"user": wvg_user.user.email})
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
@@ -35,8 +37,6 @@ class DomainListCreateAPIView(ListCreateAPIView):
     """View for listing and creating domains"""
 
     permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
-
-    queryset = Domain.objects.all()
     serializer_class = DomainSerializer
 
     def get_queryset(self):
