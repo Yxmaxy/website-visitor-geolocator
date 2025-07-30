@@ -55,7 +55,7 @@ class PushNotificationService {
                 throw new Error("Notification permission denied");
             }
 
-            const vapidPublicKey = import.meta.env.VITE_WEBSITE_VISITOR_GEOLOCATOR_VAPID_PUBLIC_KEY;
+            const vapidPublicKey = import.meta.env.VITE_NOTIFICATIONS_VAPID_PUBLIC_KEY;
             if (!vapidPublicKey) {
                 throw new Error("VAPID public key not configured in .env");
             }
@@ -106,13 +106,13 @@ class PushNotificationService {
 
     private async sendSubscriptionToServer(subscription: PushSubscription): Promise<boolean> {
         try {
-            const response = await ApiService.post("/notifications/subscribe/", {
-                    endpoint: subscription.endpoint,
-                    keys: {
-                        p256dh: this.arrayBufferToBase64(subscription.getKey("p256dh")!),
-                        auth: this.arrayBufferToBase64(subscription.getKey("auth")!)
-                    }
-            });
+            const response = await ApiService.post(`/subscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`, {
+                endpoint: subscription.endpoint,
+                keys: {
+                    p256dh: this.arrayBufferToBase64(subscription.getKey("p256dh")!),
+                    auth: this.arrayBufferToBase64(subscription.getKey("auth")!)
+                },
+            }, { useNotificationUrl: true });
             return response.success;
         } catch (error) {
             console.error("Error sending subscription to server:", error);
@@ -122,7 +122,7 @@ class PushNotificationService {
 
     private async removeSubscriptionFromServer(): Promise<boolean> {
         try {
-            await ApiService.delete("/notifications/unsubscribe/");
+            await ApiService.delete(`/unsubscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`, { useNotificationUrl: true });
             return true;
         } catch (error) {
             console.error("Error removing subscription from server:", error);

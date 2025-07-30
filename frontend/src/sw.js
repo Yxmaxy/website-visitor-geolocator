@@ -44,8 +44,7 @@ self.addEventListener("push", (event) => {
     let notificationData = {
         title: "New Notification",
         body: "You have a new notification",
-        icon: "/logo.svg",
-        badge: "/logo.svg",
+        vibrate: [],
         data: {}
     };
 
@@ -66,7 +65,7 @@ self.addEventListener("push", (event) => {
         body: notificationData.body,
         icon: notificationData.icon,
         badge: notificationData.badge,
-        vibrate: notificationData.vibrate || [200, 100, 200],
+        vibrate: notificationData.vibrate,
         data: notificationData.data,
         requireInteraction: false,
         // actions: [
