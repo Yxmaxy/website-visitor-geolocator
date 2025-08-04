@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-visitor-geolocator"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Django app for geolocating website visitors"
 readme = "README.md"
 authors = [
@@ -35,6 +35,13 @@ packages = [
     "visitor_geolocator.notifications",
     "visitor_geolocator.statistics"
 ]
+include-package-data = true
 
 [tool.setuptools.package-dir]
 visitor_geolocator = "backend/visitor_geolocator"
+
+[tool.setuptools.package-data]
+"visitor_geolocator.core" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
+"visitor_geolocator.frontend" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
+"visitor_geolocator.notifications" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
+"visitor_geolocator.statistics" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt", "management/*.py", "management/*/*.py", "data/*.geojson"]

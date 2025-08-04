@@ -1,0 +1,15 @@
+include README.md
+include LICENCE
+recursive-include backend/visitor_geolocator/core/migrations *.py
+recursive-include backend/visitor_geolocator/frontend/migrations *.py
+recursive-include backend/visitor_geolocator/notifications/migrations *.py
+recursive-include backend/visitor_geolocator/statistics/migrations *.py
+recursive-include backend/visitor_geolocator/core/templates *.txt
+recursive-include backend/visitor_geolocator/frontend/templates *.txt
+recursive-include backend/visitor_geolocator/notifications/templates *.txt
+recursive-include backend/visitor_geolocator/statistics/templates *.txt
+recursive-include backend/visitor_geolocator/statistics/management *.py
+recursive-include backend/visitor_geolocator/statistics/data *.geojson
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .DS_Store 
