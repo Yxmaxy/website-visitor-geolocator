@@ -28,4 +28,13 @@ Homepage = "https://github.com/Yxmaxy/website-visitor-geolocator"
 Repository = "https://github.com/Yxmaxy/website-visitor-geolocator.git"
 
 [tool.setuptools]
-packages = ["visitor_geolocator"]
+packages = [
+    "visitor_geolocator",
+    "visitor_geolocator.core",
+    "visitor_geolocator.frontend", 
+    "visitor_geolocator.notifications",
+    "visitor_geolocator.statistics"
+]
+
+[tool.setuptools.package-dir]
+visitor_geolocator = "backend/visitor_geolocator"
