@@ -5,7 +5,7 @@ django-cors-headers==4.7.*
 python-dotenv==1.1.*
 pywebpush==2.0.*
 djangorestframework==3.16.*
-git+https://github.com/Yxmaxy/django-simple-notifications.git
+git+https://github.com/Yxmaxy/django-simple-notifications.git@v0.0.1
 
 # linting
 pylint==3.3.*
