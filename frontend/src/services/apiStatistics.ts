@@ -66,7 +66,9 @@ class StatisticsApiService {
         const geometries = await ApiService.get<AreaGeometries>(`/statistics/geometries/?${queryString}`);
 
         // cache the result with automatic expiration
-        await CacheService.setWithFallback(cacheKey, geometries, cacheTime);
+        if (geometries?.features?.length > 0) {
+            await CacheService.setWithFallback(cacheKey, geometries, cacheTime);
+        }
         return geometries;
     }
 

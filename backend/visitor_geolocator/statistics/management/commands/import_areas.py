@@ -1,7 +1,7 @@
 # pylint: disable=line-too-long, broad-exception-caught
 
-import os
 import json
+import importlib.resources
 
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
@@ -37,18 +37,22 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"Invalid level: {level}"))
             return
 
-        geojson_file_path = os.path.join(
-            "visitor_geolocator", "statistics", "data", geojson_file_name
-        )
-
-        if not os.path.exists(geojson_file_path):
+        try:
+            # Use importlib.resources to access the data file from the package
+            with importlib.resources.files("visitor_geolocator.statistics").joinpath(
+                "data", geojson_file_name
+            ).open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError:
             self.stderr.write(
-                self.style.ERROR(f"File does not exist: {geojson_file_path}")
+                self.style.ERROR(f"File does not exist: {geojson_file_name}")
             )
             return
-
-        with open(geojson_file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        except Exception as e:
+            self.stderr.write(
+                self.style.ERROR(f"Error reading file {geojson_file_name}: {e}")
+            )
+            return
 
         for feature in data["features"]:
             try:
