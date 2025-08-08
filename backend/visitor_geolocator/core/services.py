@@ -1,4 +1,5 @@
 from typing import Optional
+from urllib.parse import urlparse
 from ipware import get_client_ip
 import requests
 
@@ -20,6 +21,20 @@ class UserService:
 
 
 class DomainService:
+    @staticmethod
+    def extract_domain_name(request: HttpRequest) -> str:
+        if domain_name := request.headers.get("Origin"):
+            return domain_name
+
+        if referer := request.headers.get("Referer"):
+            parsed_url = urlparse(referer)
+            return f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+        if host := request.headers.get("Host"):
+            return f"{request.scheme}://{host}"
+
+        return None
+
     @staticmethod
     def get_domain(
         domain_name: str, api_key: str, ignore_cache: bool = False

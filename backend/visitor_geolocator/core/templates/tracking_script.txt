@@ -12,7 +12,7 @@
         localStorage.setItem("wvg_tracking", expires.getTime());
     }
 
-    const trackingData = localStorage.getItem("{VISITOR_TRACKING_NAME}");
+    const trackingData = localStorage.getItem("wvg_tracking");
     if (trackingData) {
         try {
             const expires = parseInt(trackingData);

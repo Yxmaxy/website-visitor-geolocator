@@ -47,7 +47,7 @@ def track_visitor(request: HttpRequest):
         return _add_cors_headers(HttpResponse(status=200))
 
     # get domain and visitor data from request
-    origin = request.headers.get("Origin")
+    origin = DomainService.extract_domain_name(request)
     api_key = request.headers.get("X-Access-Token")
     domain = DomainService.get_domain(origin, api_key)
 
