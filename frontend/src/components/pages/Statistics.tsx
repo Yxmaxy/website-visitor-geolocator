@@ -7,6 +7,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pi
 import { MapContainer, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { GeoJsonObject } from "geojson";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,11 +17,12 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { AreaStatistics, AreaGeometries, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
+import type { AreaStatistics, AreaGeometry, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
 import StatisticsApiService, { LevelChoices } from "@/services/apiStatistics";
 import { DomainApiService } from "@/services/apiDomain";
 import type { Domain } from "@/services/apiDomain";
 import { getCountryFlag } from "@/services/flags";
+import { cn } from "@/services/lib/shadcn-utils";
 
 import {
     BarChart3,
@@ -99,11 +101,11 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
     );
 }
 
-function MapBoundsFitter({ geometries }: { geometries: AreaGeometries | null }) {
+function MapBoundsFitter({ geometries }: { geometries: AreaGeometry[] | null }) {
     const map = useMap();
 
     function fitBounds() {
-        if (geometries && geometries.features && geometries.features.length > 0) {
+        if (geometries && geometries.length > 0) {
             try {
                 const geoJsonLayer = L.geoJSON(geometries);
                 const bounds = geoJsonLayer.getBounds();
@@ -151,7 +153,7 @@ interface MapStatisticsCardProps {
 }
 
 function MapStatisticsCard({ statistics, level, title, description, icon }: MapStatisticsCardProps) {
-    const [geometries, setGeometries] = useState<AreaGeometries | null>(null);
+    const [geometries, setGeometries] = useState<AreaGeometry[] | null>(null);
 
     useEffect(() => {
         const fetchGeometries = async () => {
@@ -188,8 +190,8 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
         }
     };
 
-    if (!geometries) {
-        return <div>No geometry data available</div>
+    if (!geometries || geometries?.length === 0) {
+        return <MapStatisticsSkeleton title={title} description={description} icon={icon} noData={true} />
     }
 
     return (
@@ -220,7 +222,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                         className="rounded-lg !bg-transparent w-full"
                     >
                         <GeoJSON
-                            data={geometries}
+                            data={geometries as unknown as GeoJsonObject}
                             style={style}
                             onEachFeature={onEachFeature}
                             interactive={true}
@@ -355,7 +357,7 @@ function AreaStatisticsTable({ statistics, title, description, showFlag = false 
                                     <TableRow>
                                         <TableCell
                                             colSpan={columns.length}
-                                            className="h-24 text-center"
+                                            className="h-36 text-center text-muted-foreground"
                                         >
                                             No results.
                                         </TableCell>
@@ -570,7 +572,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
                             <TableRow>
                                 <TableCell
                                     colSpan={columns.length}
-                                    className="h-24 text-center"
+                                    className="h-36 text-center text-muted-foreground"
                                 >
                                     No results.
                                 </TableCell>
@@ -602,7 +604,7 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
     }));
 
     if (data.length === 0) {
-        return <div>No user agent data available</div>;
+        return <UserAgentPieChartSkeleton title={title} description={description} noData={true} />;
     }
 
     return (
@@ -773,7 +775,7 @@ function UserAgentTable({ userAgentDistribution, title, description }: UserAgent
                                     <TableRow>
                                         <TableCell
                                             colSpan={columns.length}
-                                            className="h-24 text-center"
+                                            className="h-36 text-center text-muted-foreground"
                                         >
                                             No results.
                                         </TableCell>
@@ -819,7 +821,9 @@ function LatestVisitorsSkeleton() {
     );
 }
 
-function MapStatisticsSkeleton({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
+function MapStatisticsSkeleton({ title, description, icon, noData = false }: { title: string; description: string; icon: React.ReactNode; noData?: boolean }) {
+    const text = noData ? "No data available" : "Loading ...";
+
     return (
         <Card>
             <CardHeader>
@@ -832,7 +836,11 @@ function MapStatisticsSkeleton({ title, description, icon }: { title: string; de
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Skeleton className="h-[250px] w-full rounded-lg" />
+                <Skeleton className={cn("h-[250px] w-full rounded-lg", noData && "animate-none bg-transparent border")}>
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">{text}</p>
+                    </div>
+                </Skeleton>
             </CardContent>
         </Card>
     );
@@ -871,7 +879,9 @@ function AreaStatisticsTableSkeleton({ title, description }: { title: string; de
     );
 }
 
-function UserAgentPieChartSkeleton({ title, description }: { title: string; description: string }) {
+function UserAgentPieChartSkeleton({ title, description, noData = false }: { title: string; description: string; noData?: boolean }) {
+    const text = noData ? "No data available" : "Loading ...";
+    
     return (
         <Card>
             <CardHeader>
@@ -884,7 +894,11 @@ function UserAgentPieChartSkeleton({ title, description }: { title: string; desc
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className={cn("h-[250px] w-full rounded-lg", noData && "animate-none bg-transparent border")}>
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">{text}</p>
+                    </div>
+                </Skeleton>
             </CardContent>
         </Card>
     );

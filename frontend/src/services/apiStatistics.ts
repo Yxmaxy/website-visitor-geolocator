@@ -11,7 +11,7 @@ export interface AreaStatistics {
     visitor_count: number;
 }
 
-export interface AreaGeometries {
+export interface AreaGeometry {
     type: "FeatureCollection";
     features: Array<{
         type: "Feature";
@@ -51,22 +51,22 @@ class StatisticsApiService {
     }
 
     // area
-    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<AreaGeometries> {
+    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<AreaGeometry[]> {
         const cacheKey = `area_geometries_${level}`;
         const cacheTime = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
         // Check if cached result is available and not expired
-        const cachedGeometries = await CacheService.getWithFallback<AreaGeometries>(cacheKey);
+        const cachedGeometries = await CacheService.getWithFallback<AreaGeometry[]>(cacheKey);
         if (cachedGeometries) {
             return cachedGeometries;
         }
 
         // fetch from API if not cached or expired
         const queryString = this.buildQueryString({ level });
-        const geometries = await ApiService.get<AreaGeometries>(`/statistics/geometries/?${queryString}`);
+        const geometries = await ApiService.get<AreaGeometry[]>(`/statistics/geometries/?${queryString}`);
 
         // cache the result with automatic expiration
-        if (geometries?.features?.length > 0) {
+        if (geometries && geometries.length > 0) {
             await CacheService.setWithFallback(cacheKey, geometries, cacheTime);
         }
         return geometries;

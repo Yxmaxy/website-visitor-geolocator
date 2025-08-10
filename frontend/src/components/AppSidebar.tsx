@@ -1,11 +1,20 @@
 import { Link, useLocation } from "react-router";
 
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar.tsx"
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar.tsx"
 
 import { GlobeIcon, GaugeIcon, SettingsIcon, BarChart3Icon } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile"
 
 function AppSidebar() {
     const location = useLocation();
+    const isMobile = useIsMobile();
+    const { toggleSidebar } = useSidebar();
+
+    function handleLinkClick() {
+        if (isMobile) {
+            toggleSidebar();
+        }
+    }
     
     return (
         <Sidebar collapsible="icon" className="z-20">
@@ -19,7 +28,7 @@ function AppSidebar() {
                     </SidebarHeader>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/dashboard"}>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/dashboard"} onClick={handleLinkClick}>
                             <Link to="/dashboard">
                                 <GaugeIcon className="mr-1" />
                                 <span>Dashboard</span>
@@ -28,7 +37,7 @@ function AppSidebar() {
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/domains"}>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/domains"} onClick={handleLinkClick}>
                             <Link to="/domains">
                                 <GlobeIcon className="mr-1" />
                                 <span>My Domains</span>
@@ -37,7 +46,7 @@ function AppSidebar() {
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/statistics"}>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/statistics"} onClick={handleLinkClick}>
                             <Link to="/statistics">
                                 <BarChart3Icon className="mr-1" />
                                 <span>Statistics</span>
@@ -46,7 +55,7 @@ function AppSidebar() {
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={location.pathname === "/settings"}>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/settings"} onClick={handleLinkClick}>
                             <Link to="/settings">
                                 <SettingsIcon className="mr-1" />
                                 <span>Settings</span>
