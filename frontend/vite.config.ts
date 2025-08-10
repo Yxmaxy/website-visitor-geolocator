@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, path.resolve(__dirname, "."), "")
 
     return {
+        base: "./",
         plugins: [
             react(), 
             tailwindcss(),
@@ -37,23 +38,23 @@ export default defineConfig(({ mode }) => {
                     background_color: "#ffffff",
                     display: "standalone",
                     display_override: ["standalone", "fullscreen"],
-                    start_url: "/",
-                    scope: "/",
+                    start_url: "./",
+                    scope: "./",
                     icons: [
                         {
-                            src: "/logo.svg",
+                            src: "./logo.svg",
                             sizes: "any",
                             type: "image/svg+xml",
                             purpose: "any",
                         },
                         {
-                            src: "/logo-bg-192.png",
+                            src: "./logo-bg-192.png",
                             sizes: "192x192",
                             type: "image/png",
                             purpose: "any",
                         },
                         {
-                            src: "/logo-bg-512.png",
+                            src: "./logo-bg-512.png",
                             sizes: "512x512",
                             type: "image/png",
                             purpose: "maskable",
@@ -80,6 +81,16 @@ export default defineConfig(({ mode }) => {
         build: {
             outDir: "./dist",
             emptyOutDir: true,
+            target: "es2015",
+            minify: "terser",
+            sourcemap: false,
+            rollupOptions: {
+                output: {
+                    chunkFileNames: "assets/js/[name]-[hash].js",
+                    entryFileNames: "assets/js/[name]-[hash].js",
+                    assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
+                },
+            },
         },
     }
 })
