@@ -2,6 +2,7 @@ import re
 from datetime import timedelta
 
 from django.utils import timezone
+from django.db.models import Count, Subquery, OuterRef
 
 from visitor_geolocator.core.models import Visitor, Domain
 from visitor_geolocator.statistics.models import Area, LevelChoices
@@ -32,25 +33,23 @@ class StatisticsService:
         Get visitor count by area for a specific domain or all domains
         Returns only visitor statistics without geometry data (geometries fetched separately)
         """
-        queryset = StatisticsService.get_visitors(domains, days)
-
-        area_stats = []
+        visitors = StatisticsService.get_visitors(domains, days)
 
         areas = Area.objects.filter(level=level)
-        for area in areas:
-            visitor_count = queryset.filter(location__within=area.geometry).count()
+        area_subquery = areas.filter(geometry__contains=OuterRef("location")).values(
+            "name"
+        )[:1]
 
-            if visitor_count > 0:
-                area_stats.append(
-                    {
-                        "area_name": area.name,
-                        "visitor_count": visitor_count,
-                    }
-                )
+        visitors_with_area = visitors.annotate(area_name=Subquery(area_subquery))
+        visitors_with_area = visitors_with_area.exclude(area_name__isnull=True)
 
-        area_stats.sort(key=lambda x: x["visitor_count"], reverse=True)
+        area_stats = (
+            visitors_with_area.values("area_name")
+            .annotate(visitor_count=Count("id"))
+            .order_by("-visitor_count", "area_name")
+        )
 
-        return area_stats
+        return list(area_stats)
 
     @staticmethod
     def get_user_agent_distribution(domains: list[Domain], days: int = None):

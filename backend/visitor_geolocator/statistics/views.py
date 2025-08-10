@@ -40,7 +40,7 @@ class AreaGeometriesAPIView(APIView):
         geojson_features = []
         for area in areas:
             if area.geometry and area.geometry.valid:
-                simplified_geometry = area.geometry.simplify(0.001)
+                simplified_geometry = area.simplified_geometry
                 geojson_geometry: dict = json.loads(simplified_geometry.geojson)
 
                 if (
@@ -63,7 +63,6 @@ class AreaGeometriesAPIView(APIView):
             "features": geojson_features,
         }
 
-        # Validate response with serializer
         response_serializer = AreaGeometriesResponseSerializer(data=geojson_data)
         response_serializer.is_valid(raise_exception=True)
 

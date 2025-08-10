@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import MultiPolygon
 
 
 class LevelChoices(models.IntegerChoices):
@@ -22,3 +23,8 @@ class Area(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+    @property
+    def simplified_geometry(self) -> MultiPolygon:
+        self.geometry: MultiPolygon
+        return self.geometry.simplify(0.7, preserve_topology=True)

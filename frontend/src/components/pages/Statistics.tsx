@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, PaginationState } from "@tanstack/react-table";
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { MapContainer, GeoJSON, useMap } from "react-leaflet";
-import L from "leaflet";
+
+import { CustomChart } from "@/components/ui/custom-chart";
+import { MapContainer, GeoJSON } from "react-leaflet";
+
 import "leaflet/dist/leaflet.css";
 import type { GeoJsonObject } from "geojson";
 
@@ -101,48 +102,6 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
     );
 }
 
-function MapBoundsFitter({ geometries }: { geometries: AreaGeometry[] | null }) {
-    const map = useMap();
-
-    function fitBounds() {
-        if (geometries && geometries.length > 0) {
-            try {
-                const geoJsonLayer = L.geoJSON(geometries);
-                const bounds = geoJsonLayer.getBounds();
-
-                if (bounds.isValid() && 
-                    bounds.getNorth() !== bounds.getSouth() && 
-                    bounds.getEast() !== bounds.getWest()) {
-                    map.fitBounds(bounds, { padding: [0, 0] });
-                } else {
-                    // fallback
-                    map.setView([0, 0], 2);
-                }
-            } catch (error) {
-                console.warn("Failed to fit bounds:", error);
-                // fallback
-                map.setView([0, 0], 2);
-            }
-        } else {
-            // fallback
-            map.setView([0, 0], 2);
-        }
-    }
-
-    useEffect(() => {
-        fitBounds();
-    }, [geometries, map]);
-
-    useEffect(() => {
-        window.addEventListener("resize", fitBounds);
-        return () => {
-            window.removeEventListener("resize", fitBounds);
-        };
-    }, [fitBounds]);
-
-    return null;
-}
-
 // Map Statistics Card Component
 interface MapStatisticsCardProps {
     statistics: AreaStatistics[] | null;
@@ -154,11 +113,19 @@ interface MapStatisticsCardProps {
 
 function MapStatisticsCard({ statistics, level, title, description, icon }: MapStatisticsCardProps) {
     const [geometries, setGeometries] = useState<AreaGeometry[] | null>(null);
+    const mapRef = useRef<React.ComponentRef<typeof MapContainer>>(null);
+    const geometryRef = useRef<React.ComponentRef<typeof GeoJSON>>(null);
 
     useEffect(() => {
         const fetchGeometries = async () => {
             const geometries = await StatisticsApiService.getAreaGeometries(level);
-            setGeometries(geometries); 
+            setGeometries(geometries);
+
+            if (mapRef.current && geometryRef.current) {
+                const map = mapRef.current;
+                const layer = geometryRef.current;
+                map.fitBounds(layer.getBounds())
+            }
         };
         fetchGeometries();
     }, [level]);
@@ -208,8 +175,10 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
             <CardContent>
                 <div className="relative">
                     <MapContainer
+                        ref={mapRef}
+                        key={`${level}-${statistics?.length || 0}`}
                         center={[0, 0]}
-                        zoom={2}
+                        zoom={6}
                         zoomControl={false}
                         dragging={false}
                         attributionControl={false}
@@ -218,16 +187,18 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                         scrollWheelZoom={false}
                         touchZoom={false}
                         keyboard={false}
-                        style={{ height: "250px" }}
-                        className="rounded-lg !bg-transparent w-full"
+                        style={{ height: "250px", width: "100%" }}
+                        className="rounded-lg !bg-transparent"
+
                     >
                         <GeoJSON
+                            key={`${level}-${geometries?.length || 0}`}
                             data={geometries as unknown as GeoJsonObject}
                             style={style}
                             onEachFeature={onEachFeature}
                             interactive={true}
+                            ref={geometryRef}
                         />
-                        <MapBoundsFitter geometries={geometries} />
                     </MapContainer>
                 </div>
             </CardContent>
@@ -419,26 +390,21 @@ function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
 
     return (
         <div className="[& *]:outline-transparent">
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                        dataKey="date" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                        type="monotone" 
-                        dataKey="count" 
-                        stroke="var(--chart-1)" 
-                        strokeWidth={2}
-                        dot={false}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
+            <CustomChart
+                chartType="line"
+                data={chartData}
+                config={{
+                    type: "line",
+                    dataKey: "count",
+                    stroke: "var(--chart-1)",
+                    strokeWidth: 2,
+                    dot: false
+                }}
+                xAxisDataKey="date"
+                xAxisAngle={-45}
+                xAxisHeight={80}
+                height={300}
+            />
         </div>
     );
 }
@@ -490,7 +456,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
             ),
             cell: ({ row }) => {
                 const date = new Date(row.getValue("created_at"))
-                return <div>{date.toLocaleString()}</div>
+                return <div className="max-w-[150px] truncate" title={date.toLocaleString()}>{date.toLocaleString()}</div>
             },
         },
         {
@@ -620,24 +586,17 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
             </CardHeader>
             <CardContent>
                 <div className="[& *]:outline-transparent">
-                    <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={80}
-                                fill="#000000aa"
-                                dataKey="value"
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <CustomChart
+                        chartType="pie"
+                        data={data}
+                        config={{
+                            type: "pie",
+                            dataKey: "value",
+                            nameKey: "name",
+                            colors: data.map(entry => entry.color || "var(--chart-1)")
+                        }}
+                        height={200}
+                    />
                     
                     {/* Custom Legend */}
                     <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">

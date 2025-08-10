@@ -3,9 +3,10 @@ import { toast } from "sonner";
 import { Link } from "react-router";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, PaginationState } from "@tanstack/react-table";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CustomChart } from "@/components/ui/custom-chart";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -85,7 +86,7 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
     const chartData = generateTrendData();
 
     return (
-        <Card>
+        <Card className="!pb-0">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
@@ -97,26 +98,21 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
             </CardHeader>
             <CardContent>
                 <div className="[& *]:outline-transparent">
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartData} className="text-sm">
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                                dataKey="period" 
-                                angle={-45}
-                                textAnchor="end"
-                                height={80}
-                            />
-                            <YAxis />
-                            <Tooltip contentStyle={{ backgroundColor: "var(--background)", color: "var(--foreground)", padding: "5px 8px", borderRadius: "5px" }} />
-                            <Line
-                                type="monotone" 
-                                dataKey="visitors" 
-                                stroke="var(--chart-1)" 
-                                strokeWidth={2}
-                                dot={{ strokeWidth: 2, r: 4 }}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <CustomChart
+                        chartType="line"
+                        data={chartData}
+                        config={{
+                            type: "line",
+                            dataKey: "visitors",
+                            stroke: "var(--chart-1)",
+                            strokeWidth: 2
+                        }}
+                        xAxisDataKey="period"
+                        xAxisAngle={-45}
+                        xAxisHeight={80}
+                        yAxisWidth={40}
+                        height={300}
+                    />
                 </div>
             </CardContent>
         </Card>
@@ -170,7 +166,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
             ),
             cell: ({ row }) => {
                 const date = new Date(row.getValue("created_at"))
-                return <div>{date.toLocaleString()}</div>
+                return <div className="max-w-[150px] truncate" title={date.toLocaleString()}>{date.toLocaleString()}</div>
             },
         },
         {
