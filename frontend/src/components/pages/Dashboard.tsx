@@ -98,7 +98,7 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
             <CardContent>
                 <div className="[& *]:outline-transparent">
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartData}>
+                        <LineChart data={chartData} className="text-sm">
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis 
                                 dataKey="period" 
@@ -107,7 +107,7 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
                                 height={80}
                             />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip contentStyle={{ backgroundColor: "var(--background)", color: "var(--foreground)", padding: "5px 8px", borderRadius: "5px" }} />
                             <Line
                                 type="monotone" 
                                 dataKey="visitors" 
