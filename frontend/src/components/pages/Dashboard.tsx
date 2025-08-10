@@ -146,7 +146,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Location" />
             ),
-            cell: ({ row }) => <div>{row.getValue("location_description")}</div>,
+            cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("location_description")}</div>,
         },
         {
             accessorKey: "domain",
