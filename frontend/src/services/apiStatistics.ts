@@ -63,10 +63,10 @@ class StatisticsApiService {
 
         // fetch from API if not cached or expired
         const queryString = this.buildQueryString({ level });
-        const geometries = await ApiService.get<AreaGeometry[]>(`/statistics/geometries/?${queryString}`);
+        const geometries = await ApiService.get<any>(`/statistics/geometries/?${queryString}`);
 
         // cache the result with automatic expiration
-        if (geometries && geometries.length > 0) {
+        if (geometries && geometries.features.length > 0) {
             await CacheService.setWithFallback(cacheKey, geometries, cacheTime);
         }
         return geometries;

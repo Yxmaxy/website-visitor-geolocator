@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
@@ -113,22 +113,29 @@ interface MapStatisticsCardProps {
 
 function MapStatisticsCard({ statistics, level, title, description, icon }: MapStatisticsCardProps) {
     const [geometries, setGeometries] = useState<AreaGeometry[] | null>(null);
-    const mapRef = useRef<React.ComponentRef<typeof MapContainer>>(null);
-    const geometryRef = useRef<React.ComponentRef<typeof GeoJSON>>(null);
+    const [map, setMap] = useState<any>(null);
+    const [geoJSON, setGeoJSON] = useState<any>(null);
 
     useEffect(() => {
         const fetchGeometries = async () => {
             const geometries = await StatisticsApiService.getAreaGeometries(level);
             setGeometries(geometries);
 
-            if (mapRef.current && geometryRef.current) {
-                const map = mapRef.current;
-                const layer = geometryRef.current;
-                map.fitBounds(layer.getBounds())
-            }
+            fitToBounds();
         };
         fetchGeometries();
     }, [level]);
+
+    useEffect(() => {
+        fitToBounds();
+    }, [map, geoJSON]);
+
+    function fitToBounds() {
+        if (geometries && map && geoJSON) {
+            map.invalidateSize();
+            map.fitBounds(geoJSON.getBounds());
+        }
+    }
 
     // color intensity based on visitor count    
     const visitorCountMap = new Map(statistics?.map(area => [area.area_name, area.visitor_count]) || []);
@@ -173,12 +180,13 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="relative">
+                <div className="relative h-[250px]">
                     <MapContainer
-                        ref={mapRef}
+                        ref={setMap}
                         key={`${level}-${statistics?.length || 0}`}
+                        // center={[51.505, -0.09]}
                         center={[0, 0]}
-                        zoom={6}
+                        zoom={1}
                         zoomControl={false}
                         dragging={false}
                         attributionControl={false}
@@ -187,17 +195,16 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                         scrollWheelZoom={false}
                         touchZoom={false}
                         keyboard={false}
-                        style={{ height: "250px", width: "100%" }}
+                        style={{ height: "100%", width: "100%", minHeight: "250px" }}
                         className="rounded-lg !bg-transparent"
-
                     >
                         <GeoJSON
+                            ref={setGeoJSON}
                             key={`${level}-${geometries?.length || 0}`}
                             data={geometries as unknown as GeoJsonObject}
                             style={style}
                             onEachFeature={onEachFeature}
                             interactive={true}
-                            ref={geometryRef}
                         />
                     </MapContainer>
                 </div>
@@ -436,7 +443,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
             header: ({ column }) => (
                 <DataTableColumnHeader column={column} title="Location" />
             ),
-            cell: ({ row }) => <div>{row.getValue("location_description")}</div>,
+            cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("location_description")}</div>,
         },
         {
             accessorKey: "domain",

@@ -144,6 +144,9 @@
     outline: none !important;
     cursor: default !important;
 }
+.leaflet-tooltip:before {
+    border: 0 !important;
+}
 
 /* Recharts */
 .recharts-surface {

@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
                 },
                 manifest: {
                     name: "Website Visitor Geolocator",
-                    short_name: "WVG",
+                    short_name: "Website Visitor Geolocator",
                     description: "Track and analyze website visitor geolocation data",
                     theme_color: "#0f172a",
                     background_color: "#ffffff",
