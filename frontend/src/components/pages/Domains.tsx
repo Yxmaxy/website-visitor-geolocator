@@ -53,7 +53,7 @@ function DomainCard({
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex md:items-center justify-between md:flex-row flex-col gap-3">
                     <div>
                         <CardTitle className="flex items-center gap-2 mb-2">
                             {domain.domain}
