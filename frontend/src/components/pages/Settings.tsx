@@ -43,7 +43,9 @@ import {
     User,
     BellDot,
     Download,
+    Trash2,
 } from "lucide-react";
+import CacheService from "@/services/cacheService";
 
 // Settings Header Component
 interface SettingsHeaderProps {
@@ -226,7 +228,11 @@ function NotificationPreferencesCard({
     };
 
     return (
-        <Card>
+        <Card className="relative">
+            <div className="absolute top-0 right-0 left-0 bottom-0 bg-gray-500/50 flex items-center justify-center rounded-xl z-20">
+                <p className="text-white text-sm">Comming soon</p>
+            </div>
+
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-1.5">
                     <BellDot className="h-5 w-5" />
@@ -482,6 +488,56 @@ function InstallButtonCard() {
     );
 }
 
+// Clear Cache Card Component
+function ClearCacheCard() {
+    function clearCache() {
+        CacheService.clear();
+        toast.success("Cache cleared successfully");
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <Trash2 className="h-5 w-5" />
+                    Clear Local Cache
+                </CardTitle>
+                <CardDescription>
+                    Clear the local cache to refresh the application's data.
+                </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Clear locally stored data
+                        </Button>
+                    </AlertDialogTrigger>
+
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will clear all locally stored data which could temporarily slow down the application.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction  onClick={clearCache}>
+                                Clear cache
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+
+                    </AlertDialogContent>
+                </AlertDialog>
+            </CardContent>
+        </Card>
+    );
+}
+
 // Main Settings Component
 function Settings() {
     const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences | null>(null);
@@ -580,12 +636,14 @@ function Settings() {
                     <AccountCard onLogout={handleLogout} disabled={saving} />
                 </div>
 
-                <div>
+                <div className="space-y-6">
                     <NotificationPreferencesCard
                         notificationPreferences={notificationPreferences}
                         setNotificationPreferences={updateNotificationPreferences}
                         disabled={saving}
                     />
+
+                    <ClearCacheCard />
                 </div>
             </div>
         </TooltipProvider>
