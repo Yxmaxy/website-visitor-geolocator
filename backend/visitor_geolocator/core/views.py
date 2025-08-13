@@ -4,6 +4,7 @@ from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
+from django.views.decorators.cache import cache_page
 
 from visitor_geolocator.core.services import DomainService
 from visitor_geolocator.notifications.services import VisitorNotificationService
@@ -18,6 +19,7 @@ def _add_cors_headers(response: HttpResponse) -> HttpResponse:
 
 
 @require_http_methods(["GET"])
+@cache_page(settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_SCRIPT_CACHE_MAX_AGE)
 def tracking_script(request: HttpRequest):
     """Serves the tracking script that will be embedded on client websites."""
 
@@ -36,6 +38,13 @@ def tracking_script(request: HttpRequest):
     )
     response = HttpResponse(script_content, content_type="application/javascript")
     response["Access-Control-Allow-Origin"] = "*"
+
+    # headers for caching in browser
+    response["Cache-Control"] = (
+        f"private, max-age={settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_SCRIPT_CACHE_MAX_AGE}"
+    )
+    response["ETag"] = f'"{hash(script_content)}"'
+
     return response
 
 
