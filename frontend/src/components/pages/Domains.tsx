@@ -38,7 +38,6 @@ interface DomainCardProps {
     onEdit: (domain: Domain) => void;
     onDelete: (domainId: number) => void;
     onShowScript: (domain: Domain) => void;
-    onCopyInput: (inputData: string, descriptor: string) => Promise<void>;
 }
 
 function DomainCard({
@@ -48,7 +47,6 @@ function DomainCard({
     onEdit,
     onDelete,
     onShowScript,
-    onCopyInput
 }: DomainCardProps) {
     return (
         <Card>
@@ -66,18 +64,6 @@ function DomainCard({
                         </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => onShowScript(domain)}
-                                >
-                                    <Code2 className="w-4 h-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>View tracking script</TooltipContent>
-                        </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
@@ -141,12 +127,12 @@ function DomainCard({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => onCopyInput(domain.api_key, "API Key")}
+                                        onClick={() => onShowScript(domain)}
                                     >
-                                        <Copy className="w-4 h-4" />
+                                        <Code2 className="w-4 h-4" />
                                     </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Copy API key</TooltipContent>
+                                <TooltipContent>View tracking script</TooltipContent>
                             </Tooltip>
                         </div>
                     </div>
@@ -695,7 +681,6 @@ function Domains() {
                                 setIsDeleteDialogOpen(true);
                             }}
                             onShowScript={handleShowScript}
-                            onCopyInput={handleCopyInput}
                         />
                     ))}
                 </div>

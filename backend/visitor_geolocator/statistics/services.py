@@ -16,7 +16,7 @@ class StatisticsService:
         """
         Get domain visitors limited by days
         """
-        queryset = Visitor.objects.filter(domain__in=domains)
+        queryset = Visitor.objects.select_related("domain").filter(domain__in=domains)
         if days:
             start_date = timezone.now() - timedelta(days=days)
             queryset = queryset.filter(created_at__gte=start_date)
