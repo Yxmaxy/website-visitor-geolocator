@@ -190,15 +190,13 @@ function MapStatisticsCard({ statistics, geometries, title, description, icon, u
 
     return (
         <Card>
-            <CardHeader className="flex flex-row justify-between gap-2">
+            <CardHeader className="flex flex-row justify-between gap-0.5">
                 <div>
                     <CardTitle className="flex items-center gap-2 mb-2">
                         {icon}
                         {title}
                     </CardTitle>
-                    <CardDescription>
-                        {description}
-                    </CardDescription>
+                    <CardDescription>{description}</CardDescription>
                 </div>
 
                 {upperRegions && (
@@ -220,7 +218,7 @@ function MapStatisticsCard({ statistics, geometries, title, description, icon, u
                 )}
             </CardHeader>
             <CardContent>
-                <div className="relative h-[250px]">
+                <div className="relative h-[280px]">
                     <MapContainer
                         ref={setMap}
                         center={[0, 0]}
@@ -233,7 +231,7 @@ function MapStatisticsCard({ statistics, geometries, title, description, icon, u
                         scrollWheelZoom={false}
                         touchZoom={false}
                         keyboard={false}
-                        style={{ height: "100%", width: "100%", minHeight: "250px" }}
+                        style={{ height: "100%", width: "100%", minHeight: "280px" }}
                         className="rounded-lg !bg-transparent"
                     >
                         <GeoJSON
@@ -832,12 +830,10 @@ function MapStatisticsSkeleton({ title, description, icon }: { title: string; de
                     {icon}
                     {title}
                 </CardTitle>
-                <CardDescription>
-                    {description}
-                </CardDescription>
+                <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent>
-                <Skeleton className={cn("h-[250px] w-full rounded-lg animate-none bg-transparent border")}>
+                <Skeleton className={cn("h-[280px] w-full rounded-lg animate-none bg-transparent border")}>
                     <div className="flex items-center justify-center h-full gap-1">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         <p className="text-sm text-muted-foreground">Loading ...</p>
@@ -896,7 +892,7 @@ function UserAgentPieChartSkeleton({ title, description, noData = false }: { tit
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Skeleton className={cn("h-[250px] w-full rounded-lg", noData && "animate-none bg-transparent border")}>
+                <Skeleton className={cn("h-[280px] w-full rounded-lg", noData && "animate-none bg-transparent border")}>
                     <div className="flex items-center justify-center h-full">
                         <p className="text-sm text-muted-foreground">{text}</p>
                     </div>

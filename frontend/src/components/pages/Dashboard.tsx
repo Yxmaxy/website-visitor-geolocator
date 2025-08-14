@@ -340,7 +340,7 @@ function Dashboard() {
     const loadVisitors = useCallback(async () => {
         try {
             setVisitorsLoading(true);
-            const visitorsData = await StatisticsApiService.getLatestVisitors(undefined, 30);
+            const visitorsData = await StatisticsApiService.getLatestVisitors(null, 30);
             setVisitors(visitorsData);
         } catch (error) {
             toast.error("Failed to load visitors data");

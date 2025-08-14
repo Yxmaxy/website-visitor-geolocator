@@ -41,6 +41,21 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     "Liechtenstein": "🇱🇮",
     "San Marino": "🇸🇲",
     "Vatican City": "🇻🇦",
+    "Russian Federation": "🇷🇺",
+    "Belarus": "🇧🇾",
+    "Macedonia": "🇲🇰",
+    "Serbia": "🇷🇸",
+    "Kosovo": "🇽🇰",
+    "Cyprus": "🇨🇾",
+    "Turkey": "🇹🇷",
+    "Georgia": "🇬🇪",
+    "Armenia": "🇦🇲",
+    "Azerbaijan": "🇦🇿",
+    "Kazakhstan": "🇰🇿",
+    "Uzbekistan": "🇺🇿",
+    "Turkmenistan": "🇹🇲",
+    "Kyrgyzstan": "🇰🇬",
+    "Tajikistan": "🇹🇯",
 
     // Asia
     "China": "🇨🇳",
@@ -80,16 +95,10 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     "Syria": "🇸🇾",
     "Israel": "🇮🇱",
     "Palestine": "🇵🇸",
-    "Cyprus": "🇨🇾",
-    "Turkey": "🇹🇷",
-    "Georgia": "🇬🇪",
-    "Armenia": "🇦🇲",
-    "Azerbaijan": "🇦🇿",
-    "Kazakhstan": "🇰🇿",
-    "Uzbekistan": "🇺🇿",
-    "Turkmenistan": "🇹🇲",
-    "Kyrgyzstan": "🇰🇬",
-    "Tajikistan": "🇹🇯",
+    "Taiwan": "🇹🇼",
+    "Hong Kong": "🇭🇰",
+    "Macau": "🇲🇴",
+    "North Korea": "🇰🇵",
 
     // Africa
     "Nigeria": "🇳🇬",
@@ -146,6 +155,12 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     "Cape Verde": "🇨🇻",
     "São Tomé and Príncipe": "🇸🇹",
     "Seychelles": "🇸🇨",
+    "Réunion": "🇷🇪",
+    "Mayotte": "🇾🇹",
+    "Western Sahara": "🇪🇭",
+    "Canary Islands": "🇮🇨",
+    "Madeira": "🇵🇹",
+    "Azores": "🇵🇹",
 
     // Oceania
     "Australia": "🇦🇺",
@@ -176,6 +191,7 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     // North America
     "United States": "🇺🇸",
     "Canada": "🇨🇦",
+    "Mexico": "🇲🇽",
     "Greenland": "🇬🇱",
     "Cuba": "🇨🇺",
     "Haiti": "🇭🇹",
@@ -199,7 +215,6 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     "Belize": "🇧🇿",
 
     // South America
-    "Mexico": "🇲🇽",
     "Brazil": "🇧🇷",
     "Argentina": "🇦🇷",
     "Chile": "🇨🇱",
@@ -213,6 +228,9 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
     "Guyana": "🇬🇾",
     "Suriname": "🇸🇷",
     "French Guiana": "🇬🇫",
+    "Falkland Islands": "🇫🇰",
+    "South Georgia": "🇬🇸",
+    "Easter Island": "🇨🇱",
 };
 
 // Helper function to get country flag
