@@ -1,5 +1,6 @@
 import { ApiService } from "@/services/api";
 import CacheService from "@/services/cacheService";
+import type { GeoJsonObject } from "geojson";
 
 export enum LevelChoices {
     COUNTRY = 1,
@@ -51,12 +52,12 @@ class StatisticsApiService {
     }
 
     // area
-    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<AreaGeometry[]> {
+    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<GeoJsonObject> {
         const cacheKey = `area_geometries_${level}`;
         const cacheTime = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
         // Check if cached result is available and not expired
-        const cachedGeometries = await CacheService.getWithFallback<AreaGeometry[]>(cacheKey);
+        const cachedGeometries = await CacheService.getWithFallback<GeoJsonObject>(cacheKey);
         if (cachedGeometries) {
             return cachedGeometries;
         }
@@ -72,17 +73,17 @@ class StatisticsApiService {
         return geometries;
     }
 
-    static async getAreaStatistics(domain_id?: number, level: LevelChoices = LevelChoices.COUNTRY, days: number = 30): Promise<AreaStatistics[]> {
+    static async getAreaStatistics(domain_id: number | null, level: LevelChoices = LevelChoices.COUNTRY, days: number = 30): Promise<AreaStatistics[]> {
         const queryString = this.buildQueryString({ domain_id, level, days });
         return ApiService.get<AreaStatistics[]>(`/statistics/area/?${queryString}`);
     }
 
-    static async getLatestVisitors(domain_id?: number, days: number = 30): Promise<Visitor[]> {
+    static async getLatestVisitors(domain_id: number | null, days: number = 30): Promise<Visitor[]> {
         const queryString = this.buildQueryString({ domain_id, days });
         return ApiService.get<Visitor[]>(`/statistics/visitors/?${queryString}`);
     }
 
-    static async getUserAgentDistribution(domain_id?: number, days: number = 30): Promise<UserAgentDistribution[]> {
+    static async getUserAgentDistribution(domain_id: number | null, days: number = 30): Promise<UserAgentDistribution[]> {
         const queryString = this.buildQueryString({ domain_id, days });
         return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
     }
