@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
@@ -18,7 +18,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { AreaStatistics, AreaGeometry, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
+import type { AreaStatistics, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
 import StatisticsApiService, { LevelChoices } from "@/services/apiStatistics";
 import { DomainApiService } from "@/services/apiDomain";
 import type { Domain } from "@/services/apiDomain";
@@ -106,26 +106,15 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
 // Map Statistics Card Component
 interface MapStatisticsCardProps {
     statistics: AreaStatistics[] | null;
-    level: LevelChoices;
+    geometries: GeoJsonObject | null;
     title: string;
     description: string;
     icon: React.ReactNode;
 }
 
-function MapStatisticsCard({ statistics, level, title, description, icon }: MapStatisticsCardProps) {
-    const [geometries, setGeometries] = useState<AreaGeometry[] | null>(null);
+function MapStatisticsCard({ statistics, geometries, title, description, icon }: MapStatisticsCardProps) {
     const [map, setMap] = useState<any>(null);
     const [geoJSON, setGeoJSON] = useState<any>(null);
-
-    useEffect(() => {
-        const fetchGeometries = async () => {
-            const geometries = await StatisticsApiService.getAreaGeometries(level);
-            setGeometries(geometries);
-
-            fitToBounds();
-        };
-        fetchGeometries();
-    }, [level]);
 
     useEffect(() => {
         fitToBounds();
@@ -165,7 +154,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
         }
     };
 
-    if (!geometries || geometries?.length === 0) {
+    if (!geometries) {
         return <MapStatisticsSkeleton title={title} description={description} icon={icon} />
     }
 
@@ -184,8 +173,6 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                 <div className="relative h-[250px]">
                     <MapContainer
                         ref={setMap}
-                        key={`${level}-${statistics?.length || 0}`}
-                        // center={[51.505, -0.09]}
                         center={[0, 0]}
                         zoom={1}
                         zoomControl={false}
@@ -201,8 +188,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
                     >
                         <GeoJSON
                             ref={setGeoJSON}
-                            key={`${level}-${geometries?.length || 0}`}
-                            data={geometries as unknown as GeoJsonObject}
+                            data={geometries}
                             style={style}
                             onEachFeature={onEachFeature}
                             interactive={true}
@@ -359,9 +345,11 @@ interface LatestVisitorsChartProps {
     lastDays: number;
 }
 
-function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
-    // Generate array of dates for the last N days
-    const generateDateRange = () => {
+const LatestVisitorsChart = memo(({ visitors, lastDays }: LatestVisitorsChartProps) => {
+    const chartData = useMemo(() => {
+        if (lastDays === 1) return [];
+
+        // Generate array of dates for the last N days
         const dates: string[] = [];
         const today = new Date();
         for (let i = lastDays - 1; i >= 0; i--) {
@@ -369,30 +357,28 @@ function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
             date.setDate(date.getDate() - i);
             dates.push(date.toISOString().split("T")[0] || ""); // YYYY-MM-DD format
         }
-        return dates;
-    };
 
-    // Group visitors by date
-    const groupedVisitors = visitors.reduce((acc, visitor) => {
-        const dateParts = new Date(visitor.created_at).toISOString().split("T");
-        const date = dateParts[0]; // YYYY-MM-DD format
-        if (date && date.length > 0) {
-            acc[date] = (acc[date] || 0) + 1;
-        }
-        return acc;
-    }, {} as Record<string, number>);
+        // Group visitors by date
+        const groupedVisitors = visitors.reduce((acc, visitor) => {
+            const dateParts = new Date(visitor.created_at).toISOString().split("T");
+            const date = dateParts[0]; // YYYY-MM-DD format
+            if (date && date.length > 0) {
+                acc[date] = (acc[date] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<string, number>);
 
-    // Create chart data with all dates in range, including zero counts
-    const dateRange = generateDateRange();
-    const chartData = dateRange.map((date: string) => ({
-        date: new Date(date).toLocaleDateString("en-US", { 
-            month: "short", 
-            day: "numeric" 
-        }),
-        count: groupedVisitors[date] || 0
-    }));
-    
-    if (lastDays === 1) {
+        // Create chart data with all dates in range, including zero counts
+        return dates.map((date: string) => ({
+            date: new Date(date).toLocaleDateString("en-US", { 
+                month: "short", 
+                day: "numeric" 
+            }),
+            count: groupedVisitors[date] || 0
+        }));
+    }, [visitors, lastDays]);
+
+    if (lastDays === 1 || chartData.length === 0) {
         return <></>;
     }
 
@@ -415,14 +401,14 @@ function LatestVisitorsChart({ visitors, lastDays }: LatestVisitorsChartProps) {
             />
         </div>
     );
-}
+});
 
 // Latest Visitors Data Table Component
 interface LatestVisitorsDataTableProps {
     visitors: Visitor[];
 }
 
-function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
+const LatestVisitorsDataTable = memo(function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -559,7 +545,7 @@ function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
             <DataTablePagination table={table} />
         </div>
     );
-}
+});
 
 // User Agent Pie Chart Component
 interface UserAgentPieChartProps {
@@ -910,41 +896,24 @@ function Statistics() {
     const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
     const [lastDays, setLastDays] = useState<number>(30);
 
-    // Individual loading states
-    const [countryStatisticsLoading, setCountryStatisticsLoading] = useState(true);
-    const [continentStatisticsLoading, setContinentStatisticsLoading] = useState(true);
-    const [visitorsLoading, setVisitorsLoading] = useState(true);
-    const [userAgentDistributionLoading, setUserAgentDistributionLoading] = useState(true);
-
     // Data states
     const [countryStatistics, setCountryStatistics] = useState<AreaStatistics[]>([]);
     const [continentStatistics, setContinentStatistics] = useState<AreaStatistics[]>([]);
     const [visitors, setVisitors] = useState<Visitor[]>([]);
     const [userAgentDistribution, setUserAgentDistribution] = useState<UserAgentDistribution[]>([]);
 
-    // Load domains independently
-    const loadDomains = useCallback(async () => {
-        try {
-            const domainsData = await DomainApiService.getDomains();
-            setDomains(domainsData);
-        } catch (error) {
-            toast.error("Failed to load domains");
-        }
+    // Geometries
+    const [continentGeometries, setContinentGeometries] = useState<GeoJsonObject | null>(null);
+    const [countryGeometries, setCountryGeometries] = useState<GeoJsonObject | null>(null);
+
+    // Load static data on mount (geometries and domains)
+    useEffect(() => {
+        StatisticsApiService.getAreaGeometries(LevelChoices.CONTINENT).then(setContinentGeometries).catch(() => toast.error("Failed to load continent geometries"));
+        StatisticsApiService.getAreaGeometries(LevelChoices.COUNTRY).then(setCountryGeometries).catch(() => toast.error("Failed to load country geometries"));
+        DomainApiService.getDomains().then(setDomains).catch(() => toast.error("Failed to load domains"));
     }, []);
 
-    // Handle domain selection from URL parameter
-    const handleDomainChange = useCallback((domain: Domain | null) => {
-        setSelectedDomain(domain);
-        
-        // Update URL parameters
-        if (domain) {
-            setSearchParams({ domain: domain.id.toString() });
-        } else {
-            setSearchParams({});
-        }
-    }, [setSearchParams]);
-
-    // Set initial domain from URL parameter
+    // Handle initial URL parameter and set selected domain
     useEffect(() => {
         const domainId = searchParams.get("domain");
         if (domainId && domains.length > 0) {
@@ -955,84 +924,55 @@ function Statistics() {
         }
     }, [searchParams, domains]);
 
-    // Load country statistics independently
-    const loadCountryStatistics = useCallback(async () => {
-        try {
-            setCountryStatisticsLoading(true);
-            const areaStatsData = await StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.COUNTRY, lastDays);
-            setCountryStatistics(areaStatsData);
-        } catch (error) {
-            toast.error("Failed to load country statistics");
-        } finally {
-            setCountryStatisticsLoading(false);
-        }
-    }, [selectedDomain?.id, lastDays]);
-
-    // Load continent statistics independently
-    const loadContinentStatistics = useCallback(async () => {
-        try {
-            setContinentStatisticsLoading(true);
-            const continentStatsData = await StatisticsApiService.getAreaStatistics(selectedDomain?.id, LevelChoices.CONTINENT, lastDays);
-            setContinentStatistics(continentStatsData);
-        } catch (error) {
-            toast.error("Failed to load continent statistics");
-        } finally {
-            setContinentStatisticsLoading(false);
-        }
-    }, [selectedDomain?.id, lastDays]);
-
-    // Load visitors independently
-    const loadVisitors = useCallback(async () => {
-        try {
-            setVisitorsLoading(true);
-            const visitorsData = await StatisticsApiService.getLatestVisitors(selectedDomain?.id, lastDays);
-            setVisitors(visitorsData);
-        } catch (error) {
-            toast.error("Failed to load visitors data");
-        } finally {
-            setVisitorsLoading(false);
-        }
-    }, [selectedDomain?.id, lastDays]);
-
-    // Load user agent distribution independently
-    const loadUserAgentDistribution = useCallback(async () => {
-        try {
-            setUserAgentDistributionLoading(true);
-            const userAgentDistributionData = await StatisticsApiService.getUserAgentDistribution(selectedDomain?.id, lastDays);
-            setUserAgentDistribution(userAgentDistributionData);
-        } catch (error) {
-            toast.error("Failed to load user agent distribution");
-        } finally {
-            setUserAgentDistributionLoading(false);
-        }
-    }, [selectedDomain?.id, lastDays]);
-
-    // Load domains on mount
+    // Load statistics data when domain or lastDays changes
     useEffect(() => {
-        loadDomains();
-    }, [loadDomains]);
+        // Skip if domains haven't loaded yet
+        if (domains.length === 0) return;
 
-    // Load statistics when domain or days change
-    useEffect(() => {
-        loadCountryStatistics();
-        loadContinentStatistics();
-        loadVisitors();
-        loadUserAgentDistribution();
-    }, [loadCountryStatistics, loadContinentStatistics, loadVisitors, loadUserAgentDistribution]);
-    
+        const loadStatisticsData = async () => {
+            try {
+                const domainId = selectedDomain?.id || null;
+                
+                // Update URL params (but don't trigger a re-render)
+                if (selectedDomain) {
+                    setSearchParams({ domain: selectedDomain.id.toString() }, { replace: true });
+                } else {
+                    setSearchParams({}, { replace: true });
+                }
+
+                // Load all statistics data
+                const [countryStats, continentStats, visitorsData, userAgentData] = await Promise.all([
+                    StatisticsApiService.getAreaStatistics(domainId, LevelChoices.COUNTRY, lastDays),
+                    StatisticsApiService.getAreaStatistics(domainId, LevelChoices.CONTINENT, lastDays),
+                    StatisticsApiService.getLatestVisitors(domainId, lastDays),
+                    StatisticsApiService.getUserAgentDistribution(domainId, lastDays)
+                ]);
+
+                setCountryStatistics(countryStats);
+                setContinentStatistics(continentStats);
+                setVisitors(visitorsData);
+                setUserAgentDistribution(userAgentData);
+            } catch (error) {
+                toast.error("Failed to load statistics data");
+            }
+        };
+
+        loadStatisticsData();
+    }, [selectedDomain?.id, lastDays, domains.length]);
+
     return (
         <div>
             <StatisticsHeader
                 selectedDomain={selectedDomain}
                 domains={domains}
-                onDomainChange={handleDomainChange}
+                onDomainChange={setSelectedDomain}
                 lastDays={lastDays}
                 onLastDaysChange={setLastDays}
             />
 
             <div className="space-y-6 mt-6">
                 {/* Latest visitors */}
-                {visitorsLoading ? (
+                {visitors.length === 0 ? (
                     <LatestVisitorsSkeleton />
                 ) : (
                     <Card>
@@ -1047,10 +987,12 @@ function Statistics() {
                         </CardHeader>
                         <CardContent>
                             <LatestVisitorsChart
+                                key={`visitors-${selectedDomain?.id || 'all'}-${lastDays}`}
                                 visitors={visitors}
                                 lastDays={lastDays}
                             />
                             <LatestVisitorsDataTable
+                                key={`visitors-table-${selectedDomain?.id || 'all'}-${lastDays}`}
                                 visitors={visitors}
                             />
                         </CardContent>
@@ -1059,7 +1001,7 @@ function Statistics() {
 
                 {/* Continent Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {continentStatisticsLoading ? (
+                    {continentStatistics.length === 0 ? (
                         <MapStatisticsSkeleton
                             title="Visitors by Continent"
                             description="Distribution of visitors by continent"
@@ -1067,20 +1009,22 @@ function Statistics() {
                         />
                     ) : (
                         <MapStatisticsCard
+                            key={`continent-map-${selectedDomain?.id || 'all'}-${lastDays}`}
                             statistics={continentStatistics}
-                            level={LevelChoices.CONTINENT}
+                            geometries={continentGeometries}
                             icon={<Globe className="h-5 w-5" />}
                             title="Visitors by Continent"
                             description="Distribution of visitors by continent"
                         />
                     )}
-                    {continentStatisticsLoading ? (
+                    {continentStatistics.length === 0 ? (
                         <AreaStatisticsTableSkeleton
                             title="Continents"
                             description="Visitor statistics by continent"
                         />
                     ) : (
                         <AreaStatisticsTable
+                            key={`continent-table-${selectedDomain?.id || 'all'}-${lastDays}`}
                             statistics={continentStatistics}
                             title="Continents"
                             description="Visitor statistics by continent"
@@ -1091,7 +1035,7 @@ function Statistics() {
 
                 {/* Country Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {countryStatisticsLoading ? (
+                    {countryStatistics.length === 0 ? (
                         <MapStatisticsSkeleton
                             title="Visitors by Country"
                             description="Distribution of visitors by country"
@@ -1099,20 +1043,22 @@ function Statistics() {
                         />
                     ) : (
                         <MapStatisticsCard
+                            key={`country-map-${selectedDomain?.id || 'all'}-${lastDays}`}
                             statistics={countryStatistics}
-                            level={LevelChoices.COUNTRY}
+                            geometries={countryGeometries}
                             icon={<MapPin className="h-5 w-5" />}
                             title="Visitors by Country"
                             description="Distribution of visitors by country"
                         />
                     )}
-                    {countryStatisticsLoading ? (
+                    {countryStatistics.length === 0 ? (
                         <AreaStatisticsTableSkeleton
                             title="Countries"
                             description="Visitor statistics by country"
                         />
                     ) : (
                         <AreaStatisticsTable
+                            key={`country-table-${selectedDomain?.id || 'all'}-${lastDays}`}
                             statistics={countryStatistics}
                             title="Countries"
                             description="Visitor statistics by country"
@@ -1122,25 +1068,27 @@ function Statistics() {
 
                 {/* User Agent Distribution */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {userAgentDistributionLoading ? (
+                    {userAgentDistribution.length === 0 ? (
                         <UserAgentPieChartSkeleton
                             title="Browser Distribution"
                             description="Distribution of visitors by browser"
                         />
                     ) : (
                         <UserAgentPieChart
+                            key={`user-agent-chart-${selectedDomain?.id || 'all'}-${lastDays}`}
                             userAgentDistribution={userAgentDistribution}
                             title="Browser Distribution"
                             description="Distribution of visitors by browser"
                         />
                     )}
-                    {userAgentDistributionLoading ? (
+                    {userAgentDistribution.length === 0 ? (
                         <UserAgentTableSkeleton
                             title="Browsers"
                             description="Visitor statistics by browser"
                         />
                     ) : (
                         <UserAgentTable
+                            key={`user-agent-table-${selectedDomain?.id || 'all'}-${lastDays}`}
                             userAgentDistribution={userAgentDistribution}
                             title="Browsers"
                             description="Visitor statistics by browser"
