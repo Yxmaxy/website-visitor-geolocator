@@ -27,4 +27,9 @@ class Area(models.Model):
     @property
     def simplified_geometry(self) -> MultiPolygon:
         self.geometry: MultiPolygon
+
+        if self.level == LevelChoices.CONTINENT:
+            return self.geometry.simplify(0.1, preserve_topology=True)
+        if self.level == LevelChoices.COUNTRY:
+            return self.geometry.simplify(0.001, preserve_topology=True)
         return self.geometry.simplify(0.7, preserve_topology=True)

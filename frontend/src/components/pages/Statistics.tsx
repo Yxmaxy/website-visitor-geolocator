@@ -29,6 +29,7 @@ import {
     BarChart3,
     Clock,
     Globe,
+    Loader2,
     MapPin,
     Monitor,
 } from "lucide-react";
@@ -145,7 +146,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
         const visitorCount = visitorCountMap.get(feature.properties.name) || 0;
         const intensity = visitorCount / (maxVisitorCount * 1.5) + 0.1;
         return {
-            weight: 0.25,
+            weight: 0,
             color: "var(--muted-foreground)",
             opacity: 1,
             fillColor: "var(--primary)",
@@ -165,7 +166,7 @@ function MapStatisticsCard({ statistics, level, title, description, icon }: MapS
     };
 
     if (!geometries || geometries?.length === 0) {
-        return <MapStatisticsSkeleton title={title} description={description} icon={icon} noData={true} />
+        return <MapStatisticsSkeleton title={title} description={description} icon={icon} />
     }
 
     return (
@@ -787,9 +788,7 @@ function LatestVisitorsSkeleton() {
     );
 }
 
-function MapStatisticsSkeleton({ title, description, icon, noData = false }: { title: string; description: string; icon: React.ReactNode; noData?: boolean }) {
-    const text = noData ? "No data available" : "Loading ...";
-
+function MapStatisticsSkeleton({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
     return (
         <Card>
             <CardHeader>
@@ -802,9 +801,10 @@ function MapStatisticsSkeleton({ title, description, icon, noData = false }: { t
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Skeleton className={cn("h-[250px] w-full rounded-lg", noData && "animate-none bg-transparent border")}>
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-sm text-muted-foreground">{text}</p>
+                <Skeleton className={cn("h-[250px] w-full rounded-lg animate-none bg-transparent border")}>
+                    <div className="flex items-center justify-center h-full gap-1">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <p className="text-sm text-muted-foreground">Loading ...</p>
                     </div>
                 </Skeleton>
             </CardContent>
