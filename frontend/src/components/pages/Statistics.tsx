@@ -8,7 +8,7 @@ import { CustomChart } from "@/components/ui/custom-chart";
 import { MapContainer, GeoJSON } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
-import type { GeoJsonObject } from "geojson";
+import type { FeatureCollection } from "geojson";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -104,21 +104,51 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
 }
 
 // Map Statistics Card Component
+interface UpperRegion {
+    name: string;
+    zoom: number;
+    center: [number, number]; // [latitude, longitude]
+}
+
+// Predefined upper regions for better zoom control
+const UPPER_REGIONS: UpperRegion[] = [
+    { name: "Europe", zoom: 2, center: [54.5260, 15.2551] },
+    { name: "Asia", zoom: 1, center: [34.0479, 100.6197] },
+    { name: "Africa", zoom: 2, center: [8.7832, 34.5085] },
+    { name: "North America", zoom: 2, center: [45.0, -100.0] },
+    { name: "South America", zoom: 2, center: [-8.7832, -55.4915] },
+    { name: "Oceania", zoom: 2, center: [-25.2744, 133.7751] },
+];
+
 interface MapStatisticsCardProps {
     statistics: AreaStatistics[] | null;
-    geometries: GeoJsonObject | null;
+    geometries: FeatureCollection | null;
     title: string;
     description: string;
     icon: React.ReactNode;
+    upperRegions?: UpperRegion[];
 }
 
-function MapStatisticsCard({ statistics, geometries, title, description, icon }: MapStatisticsCardProps) {
+function MapStatisticsCard({ statistics, geometries, title, description, icon, upperRegions }: MapStatisticsCardProps) {
     const [map, setMap] = useState<any>(null);
     const [geoJSON, setGeoJSON] = useState<any>(null);
+    const [selectedUpperLevel, setSelectedUpperLevel] = useState<string>("all");
 
     useEffect(() => {
         fitToBounds();
     }, [map, geoJSON]);
+
+    useEffect(() => {
+        if (selectedUpperLevel === "all") {
+            fitToBounds();
+        } else {
+            const selectedRegion = upperRegions?.find(region => region.name === selectedUpperLevel);
+            if (selectedRegion && map) {
+                // Set the center and zoom level for the selected region
+                map.setView(selectedRegion.center, selectedRegion.zoom);
+            }
+        }
+    }, [selectedUpperLevel, upperRegions, map]);
 
     function fitToBounds() {
         if (geometries && map && geoJSON) {
@@ -160,14 +190,34 @@ function MapStatisticsCard({ statistics, geometries, title, description, icon }:
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 mb-2">
-                    {icon}
-                    {title}
-                </CardTitle>
-                <CardDescription>
-                    {description}
-                </CardDescription>
+            <CardHeader className="flex flex-row justify-between gap-2">
+                <div>
+                    <CardTitle className="flex items-center gap-2 mb-2">
+                        {icon}
+                        {title}
+                    </CardTitle>
+                    <CardDescription>
+                        {description}
+                    </CardDescription>
+                </div>
+
+                {upperRegions && (
+                    <div className="flex items-center gap-2">
+                        <Select value={selectedUpperLevel} onValueChange={setSelectedUpperLevel}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All</SelectItem>
+                                {upperRegions.map((region) => (
+                                    <SelectItem key={region.name} value={region.name}>
+                                        {region.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
                 <div className="relative h-[250px]">
@@ -903,8 +953,8 @@ function Statistics() {
     const [userAgentDistribution, setUserAgentDistribution] = useState<UserAgentDistribution[]>([]);
 
     // Geometries
-    const [continentGeometries, setContinentGeometries] = useState<GeoJsonObject | null>(null);
-    const [countryGeometries, setCountryGeometries] = useState<GeoJsonObject | null>(null);
+    const [continentGeometries, setContinentGeometries] = useState<FeatureCollection | null>(null);
+    const [countryGeometries, setCountryGeometries] = useState<FeatureCollection | null>(null);
 
     // Load static data on mount (geometries and domains)
     useEffect(() => {
@@ -1046,6 +1096,7 @@ function Statistics() {
                             key={`country-map-${selectedDomain?.id || 'all'}-${lastDays}`}
                             statistics={countryStatistics}
                             geometries={countryGeometries}
+                            upperRegions={UPPER_REGIONS}
                             icon={<MapPin className="h-5 w-5" />}
                             title="Visitors by Country"
                             description="Distribution of visitors by country"

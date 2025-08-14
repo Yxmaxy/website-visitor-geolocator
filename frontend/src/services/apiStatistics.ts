@@ -1,6 +1,6 @@
 import { ApiService } from "@/services/api";
 import CacheService from "@/services/cacheService";
-import type { GeoJsonObject } from "geojson";
+import type { FeatureCollection } from "geojson";
 
 export enum LevelChoices {
     COUNTRY = 1,
@@ -52,12 +52,12 @@ class StatisticsApiService {
     }
 
     // area
-    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<GeoJsonObject> {
+    static async getAreaGeometries(level: LevelChoices = LevelChoices.COUNTRY): Promise<FeatureCollection> {
         const cacheKey = `area_geometries_${level}`;
         const cacheTime = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
         // Check if cached result is available and not expired
-        const cachedGeometries = await CacheService.getWithFallback<GeoJsonObject>(cacheKey);
+        const cachedGeometries = await CacheService.getWithFallback<FeatureCollection>(cacheKey);
         if (cachedGeometries) {
             return cachedGeometries;
         }
