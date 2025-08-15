@@ -33,7 +33,7 @@ def tracking_script(request: HttpRequest):
             "host": host,
             "endpoint": endpoint,
             "api_key": api_key,
-            "cookie_expiration": settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOKIE_EXPIRATION,
+            "cookie_expiration": settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOLDOWN,
         },
     )
     response = HttpResponse(script_content, content_type="application/javascript")
@@ -72,7 +72,7 @@ def track_visitor(request: HttpRequest):
         )
 
     # Send notification for new visitor
-    if settings.WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_ENABLED:
+    if visitor and settings.WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_ENABLED:
         VisitorNotificationService.handle_new_visitor(visitor)
 
     return _add_cors_headers(HttpResponse(status=200))

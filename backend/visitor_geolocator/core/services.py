@@ -1,8 +1,11 @@
 from typing import Optional
 from urllib.parse import urlparse
+from datetime import timedelta
 from ipware import get_client_ip
 import requests
 
+from django.conf import settings
+from django.utils import timezone
 from django.core.cache import cache
 from django.http.request import HttpRequest
 from django.contrib.gis.geos import Point
@@ -61,6 +64,15 @@ class DomainService:
         return Domain.objects.filter(created_by=user)
 
     @staticmethod
+    def is_visitor_in_cooldown(ip_address: str, domain: Domain) -> bool:
+        return Visitor.objects.filter(
+            ip_address=ip_address,
+            domain=domain,
+            created_at__gte=timezone.now()
+            - timedelta(seconds=settings.WEBSITE_VISITOR_GEOLOCATOR_TRACKING_COOLDOWN),
+        ).exists()
+
+    @staticmethod
     def save_domain_visitor(
         domain: Domain, request: HttpRequest
     ) -> tuple[Visitor, bool]:
@@ -77,6 +89,9 @@ class DomainService:
         # add request data
         visitor.domain = domain
         visitor.user_agent = request.META.get("HTTP_USER_AGENT")
+
+        if DomainService.is_visitor_in_cooldown(ip_address, domain):
+            return None, True
 
         visitor.save()
         return visitor, True
