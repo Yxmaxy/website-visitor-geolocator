@@ -1,7 +1,7 @@
 import { clientsClaim } from "workbox-core"
 import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching"
 
-const VERSION = "0.0.0";
+const VERSION = "0.2.2";
 const DEBUG = import.meta.env.MODE === "development";
 const CACHE_NAME = `wvg-cache-v1 ${VERSION}`;
 
