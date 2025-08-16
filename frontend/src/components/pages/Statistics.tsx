@@ -47,7 +47,7 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
     const validDays = [1, 7, 14, 30, 60, 90, 180, 365];
 
     return (
-        <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6">
+        <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6 h-12">
             <div className="flex items-center gap-2">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Statistics</h1>

@@ -388,7 +388,7 @@ function Dashboard() {
                 {/* Visitor Trends Chart */}
                 {visitorsLoading ? (
                     <VisitorTrendsSkeleton />
-                ) : (
+                ) : visitors.length > 5 && (
                     <VisitorTrendsChart
                         visitors={visitors}
                         title="Visitor Trends"
