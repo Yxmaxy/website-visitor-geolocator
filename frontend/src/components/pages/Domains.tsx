@@ -376,8 +376,8 @@ function ScriptDialog({ isOpen, onOpenChange, domain, scriptData, onCopyScript }
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle className="mb-1">Tracking Script for {domain?.domain}</DialogTitle>
+                <DialogHeader className="overflow-hidden">
+                    <DialogTitle className="mb-1 truncate">Tracking Script for {domain?.domain}</DialogTitle>
                     <DialogDescription>
                         Copy this script and add it to your website to start tracking visitors.
                     </DialogDescription>
