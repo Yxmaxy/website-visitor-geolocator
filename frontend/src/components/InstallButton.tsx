@@ -4,85 +4,87 @@ import { cn } from "@/services/lib/shadcn-utils";
 
 import { Button } from "@/components/ui/button";
 
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, X } from "lucide-react";
 
 
 let deferredInstallPrompt: any = null;
 
 const InstallButton = ({ className }: { className?: string }) => {
-    const [isPWA, setIsPWA] = useState(false);
-    const [showInstallButton, setShowInstallButton] = useState(false);
+    const [isInstalled, setIsInstalled] = useState(false);
+    const [isInstallable, setIsInstallable] = useState(false);
+    const [checkingInstallable, setCheckingInstallable] = useState(false);
 
-    useEffect(() => {
-        const checkIfPWA = () => {
-            return window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true;
-        };
-
-        const checkInstallability = async () => {
-            setIsPWA(checkIfPWA());
-            
-            if ("serviceWorker" in navigator && "BeforeInstallPromptEvent" in window) {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration && registration.active) {
-                    try {
-                        const isInstallable = await checkInstallabilityCriteria();
-                        if (isInstallable && !checkIfPWA()) {
-                            setShowInstallButton(true);
-                        }
-                    } catch (error) {
-                        console.log("App not installable:", error);
-                    }
-                }
-            }
-        };
-
-        const checkInstallabilityCriteria = async (): Promise<boolean> => {
-            if (!("serviceWorker" in navigator)) return false;
-            
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (!registration || !registration.active) return false;
-
-            if (location.protocol !== "https:" && location.hostname !== "localhost") return false;
-
-            return true;
-        };
-
-        const handleInstallPrompt = (event: Event) => {
-            event.preventDefault();
-            deferredInstallPrompt = event;
-            if (!checkIfPWA()) {
-                setShowInstallButton(true);
-            }
-        };
-
-        checkInstallability();
-
-        window.addEventListener("beforeinstallprompt", handleInstallPrompt);
-
-        const interval = setInterval(() => {
-            if (!showInstallButton && !isPWA) {
-                checkInstallability();
-                console.log("Checking installability");
-            }
-        }, 5000);
-
-        return () => {
-            window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
-            clearInterval(interval);
-        };
-    }, [showInstallButton, isPWA]);
+    const checkIsInstalled = () => {
+        return window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true;
+    }
 
     const installPWA = async () => {
         if (deferredInstallPrompt) {
             deferredInstallPrompt.prompt();
             deferredInstallPrompt = null;
-            setShowInstallButton(false);
+            setCheckingInstallable(false);
         }
     };
 
-    if (isPWA) {
+    useEffect(() => {
+        const handleInstallPrompt = (event: Event) => {
+            deferredInstallPrompt = event;
+        }
+
+        window.addEventListener("beforeinstallprompt", handleInstallPrompt);
+
+        return () => {
+            window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
+        }
+    }, []);
+
+    useEffect(() => {
+        setIsInstalled(checkIsInstalled());
+        if (isInstalled) {
+            return;
+        }
+
+        const checkInstallability = async (triesLeft: number) => {
+            setCheckingInstallable(true);
+            try {
+                if ("serviceWorker" in navigator && "BeforeInstallPromptEvent" in window) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration && registration.active) {
+                        if (!("serviceWorker" in navigator)) {
+                            throw new Error("Service worker not found");
+                        }
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        if (!registration || !registration.active) {
+                            throw new Error("Service worker not active");
+                        }
+                        if (location.protocol !== "https:" && location.hostname !== "localhost") {
+                            throw new Error("Not on https or localhost");
+                        }
+                        setIsInstallable(true);
+                        setCheckingInstallable(false);
+                        return;
+                    }
+                } else {
+                    throw new Error("Service worker and BeforeInstallPromptEvent not found");
+                }
+            } catch (error) {
+                setIsInstallable(false);
+            }
+
+            if (triesLeft > 0) {
+                setTimeout(() => {
+                    checkInstallability(triesLeft - 1);
+                }, 1000);
+            } else {
+                setCheckingInstallable(false);
+            }
+        }
+        checkInstallability(5);
+    }, []);
+
+    if (isInstalled) {
         return (
-            <Button 
+            <Button
                 disabled
                 variant="outline"
                 size="sm"
@@ -93,8 +95,8 @@ const InstallButton = ({ className }: { className?: string }) => {
             </Button>
         );
     }
-    if (!showInstallButton) {
-        return <Button 
+    if (checkingInstallable) {
+        return <Button
                 disabled
                 variant="outline"
                 size="sm"
@@ -104,9 +106,25 @@ const InstallButton = ({ className }: { className?: string }) => {
                 Checking installability...
             </Button>;
     }
+    if (!isInstallable) {
+        return <>
+            <Button
+                disabled
+                variant="outline"
+                size="sm"
+                className={cn("gap-2", className)}
+            >
+                <X className="h-4 w-4" />
+                App not installable
+            </Button>
+            <div className="text-xs text-muted-foreground mt-3">
+                You can try <a href="https://web.dev/learn/pwa/installation" target="_blank" rel="noopener noreferrer" className="text-primary underline">installing the app manually</a> from your browser.
+            </div>
+        </>;
+    }
 
     return (
-        <Button 
+        <Button
             onClick={installPWA} 
             variant="outline"
             size="sm"
