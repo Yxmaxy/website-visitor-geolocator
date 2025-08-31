@@ -1,17 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Link } from "react-router";
-import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, PaginationState } from "@tanstack/react-table";
-
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomChart } from "@/components/ui/custom-chart";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 
 import type { Visitor } from "@/services/apiStatistics";
 import StatisticsApiService from "@/services/apiStatistics";
@@ -21,10 +14,11 @@ import {
     Globe,
     Settings,
     TrendingUp,
-    Users,
     ArrowRight,
     Gauge,
 } from "lucide-react";
+
+import { VisitorDataTable } from "@/components/VisitorDataTable";
 
 // Navigation Card Component
 interface NavigationCardProps {
@@ -116,160 +110,6 @@ function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChart
                 </div>
             </CardContent>
         </Card>
-    );
-}
-
-// Latest Visitors Data Table Component
-interface LatestVisitorsDataTableProps {
-    visitors: Visitor[];
-}
-
-function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-    const [pagination, setPagination] = useState<PaginationState>({
-        pageIndex: 0,
-        pageSize: 5,
-    })
-
-    const columns: ColumnDef<Visitor>[] = [
-        {
-            accessorKey: "ip_address",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="IP Address" />
-            ),
-            cell: ({ row }) => <div className="font-medium">{row.getValue("ip_address")}</div>,
-        },
-        {
-            accessorKey: "location_description",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Location" />
-            ),
-            cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("location_description")}</div>,
-        },
-        {
-            accessorKey: "domain",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Domain" />
-            ),
-            cell: ({ row }) => (
-                <Badge variant="outline">
-                    {row.getValue("domain")}
-                </Badge>
-            ),
-        },
-        {
-            accessorKey: "created_at",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Timestamp" />
-            ),
-            cell: ({ row }) => {
-                const date = new Date(row.getValue("created_at"))
-                return <div className="max-w-[150px] truncate" title={date.toLocaleString()}>{date.toLocaleString()}</div>
-            },
-        },
-        {
-            accessorKey: "user_agent",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="User Agent" />
-            ),
-            cell: ({ row }) => {
-                const userAgent = row.getValue("user_agent") as string
-                return (
-                    <div className="max-w-[150px] truncate" title={userAgent}>
-                        {userAgent}
-                    </div>
-                )
-            },
-        },
-    ]
-
-    const table = useReactTable({
-        data: visitors || [],
-        columns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        onPaginationChange: setPagination,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        state: {
-            sorting,
-            columnFilters,
-            columnVisibility,
-            pagination,
-        },
-    })
-
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    <h3 className="text-lg font-semibold">Latest Visitors</h3>
-                </div>
-                <Link to="/statistics">
-                    <Button variant="outline" size="sm">
-                        View All Statistics
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </Link>
-            </div>
-
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
-                                    No visitors found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-        </div>
     );
 }
 
@@ -402,7 +242,10 @@ function Dashboard() {
                 ) : (
                     <Card>
                         <CardContent>
-                            <LatestVisitorsDataTable visitors={visitors} />
+                            <VisitorDataTable
+                                visitors={visitors}
+                                pageSize={5}
+                            />
                         </CardContent>
                     </Card>
                 )}

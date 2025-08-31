@@ -12,7 +12,6 @@ import type { FeatureCollection } from "geojson";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
@@ -33,6 +32,8 @@ import {
     MapPin,
     Monitor,
 } from "lucide-react";
+
+import { VisitorDataTable } from "@/components/VisitorDataTable";
 
 // Statistics Header Component
 interface StatisticsHeaderProps {
@@ -449,150 +450,6 @@ const LatestVisitorsChart = memo(({ visitors, lastDays }: LatestVisitorsChartPro
                 xAxisHeight={80}
                 height={300}
             />
-        </div>
-    );
-});
-
-// Latest Visitors Data Table Component
-interface LatestVisitorsDataTableProps {
-    visitors: Visitor[];
-}
-
-const LatestVisitorsDataTable = memo(function LatestVisitorsDataTable({ visitors }: LatestVisitorsDataTableProps) {
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-    const [pagination, setPagination] = useState<PaginationState>({
-        pageIndex: 0,
-        pageSize: 5,
-    })
-
-    const columns: ColumnDef<Visitor>[] = [
-        {
-            accessorKey: "ip_address",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="IP Address" />
-            ),
-            cell: ({ row }) => <div className="font-medium">{row.getValue("ip_address")}</div>,
-        },
-        {
-            accessorKey: "location_description",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Location" />
-            ),
-            cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("location_description")}</div>,
-        },
-        {
-            accessorKey: "domain",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Domain" />
-            ),
-            cell: ({ row }) => (
-                <Badge variant="outline">
-                    {row.getValue("domain")}
-                </Badge>
-            ),
-        },
-        {
-            accessorKey: "created_at",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="Timestamp" />
-            ),
-            cell: ({ row }) => {
-                const date = new Date(row.getValue("created_at"))
-                return <div className="max-w-[150px] truncate" title={date.toLocaleString()}>{date.toLocaleString()}</div>
-            },
-        },
-        {
-            accessorKey: "user_agent",
-            header: ({ column }) => (
-                <DataTableColumnHeader column={column} title="User Agent" />
-            ),
-            cell: ({ row }) => {
-                const userAgent = row.getValue("user_agent") as string
-                return (
-                    <div className="max-w-[150px] truncate" title={userAgent}>
-                        {userAgent}
-                    </div>
-                )
-            },
-        },
-    ]
-
-    const table = useReactTable({
-        data: visitors || [],
-        columns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
-        onPaginationChange: setPagination,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        state: {
-            sorting,
-            columnFilters,
-            columnVisibility,
-            pagination,
-        },
-    })
-
-    return (
-        <div className="space-y-4">
-
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
-                                        </TableHead>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-36 text-center text-muted-foreground"
-                                >
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <DataTablePagination table={table} />
         </div>
     );
 });
@@ -1053,9 +910,10 @@ function Statistics() {
                                 visitors={visitors}
                                 lastDays={lastDays}
                             />
-                            <LatestVisitorsDataTable
+                            <VisitorDataTable
                                 key={`visitors-table-${selectedDomain?.id || 'all'}-${lastDays}`}
                                 visitors={visitors}
+                                pageSize={5}
                             />
                         </CardContent>
                     </Card>
