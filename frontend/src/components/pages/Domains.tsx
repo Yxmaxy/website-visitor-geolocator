@@ -455,7 +455,7 @@ interface DomainHeaderProps {
 
 function DomainHeader({ onCreateClick, disabled = false }: DomainHeaderProps) {
     return (
-        <div className="flex items-center justify-between mb-6 h-12">
+        <div className="flex items-center justify-between mb-6 min-h-12">
             <div className="flex items-center gap-2">
                 <GlobeIcon className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">My Domains</h1>

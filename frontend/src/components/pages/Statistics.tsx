@@ -47,7 +47,7 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
     const validDays = [1, 7, 14, 30, 60, 90, 180, 365];
 
     return (
-        <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6 h-12">
+        <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6 min-h-12">
             <div className="flex items-center gap-2">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Statistics</h1>
@@ -254,9 +254,10 @@ interface AreaStatisticsTableProps {
     title: string;
     description: string;
     showFlag?: boolean;
+    icon: React.ReactNode;
 }
 
-function AreaStatisticsTable({ statistics, title, description, showFlag = false }: AreaStatisticsTableProps) {
+function AreaStatisticsTable({ statistics, title, description, showFlag = false, icon }: AreaStatisticsTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -322,6 +323,7 @@ function AreaStatisticsTable({ statistics, title, description, showFlag = false 
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-2">
+                    {icon}
                     {title}
                 </CardTitle>
                 <CardDescription>
@@ -600,9 +602,10 @@ interface UserAgentPieChartProps {
     userAgentDistribution: UserAgentDistribution[];
     title: string;
     description: string;
+    icon: React.ReactNode;
 }
 
-function UserAgentPieChart({ userAgentDistribution, title, description }: UserAgentPieChartProps) {
+function UserAgentPieChart({ userAgentDistribution, title, description, icon }: UserAgentPieChartProps) {
     const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
     const data = userAgentDistribution.map((item, index) => ({
@@ -612,7 +615,7 @@ function UserAgentPieChart({ userAgentDistribution, title, description }: UserAg
     }));
 
     if (data.length === 0) {
-        return <UserAgentPieChartSkeleton title={title} description={description} noData={true} />;
+        return <UserAgentPieChartSkeleton title={title} description={description} noData={true} icon={icon} />;
     }
 
     return (
@@ -663,9 +666,10 @@ interface UserAgentTableProps {
     userAgentDistribution: UserAgentDistribution[];
     title: string;
     description: string;
+    icon: React.ReactNode;
 }
 
-function UserAgentTable({ userAgentDistribution, title, description }: UserAgentTableProps) {
+function UserAgentTable({ userAgentDistribution, title, description, icon }: UserAgentTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -728,6 +732,7 @@ function UserAgentTable({ userAgentDistribution, title, description }: UserAgent
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-2">
+                    {icon}
                     {title}
                 </CardTitle>
                 <CardDescription>
@@ -794,13 +799,14 @@ function UserAgentTable({ userAgentDistribution, title, description }: UserAgent
 }
 
 // Skeleton Components
-function LatestVisitorsSkeleton() {
+function LatestVisitorsSkeleton({ icon }: { icon: React.ReactNode }) {
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center gap-2">
-                    <Skeleton className="h-5 w-5" />
+                    {icon}
                     <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-5 w-5" />
                 </div>
                 <Skeleton className="h-4 w-48" />
             </CardHeader>
@@ -844,11 +850,14 @@ function MapStatisticsSkeleton({ title, description, icon }: { title: string; de
     );
 }
 
-function AreaStatisticsTableSkeleton({ title, description }: { title: string; description: string }) {
+function AreaStatisticsTableSkeleton({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="mb-2">{title}</CardTitle>
+                <CardTitle className="flex items-center gap-2 mb-2">
+                    {icon}
+                    {title}
+                </CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="h-full">
@@ -877,14 +886,14 @@ function AreaStatisticsTableSkeleton({ title, description }: { title: string; de
     );
 }
 
-function UserAgentPieChartSkeleton({ title, description, noData = false }: { title: string; description: string; noData?: boolean }) {
+function UserAgentPieChartSkeleton({ title, description, noData = false, icon }: { title: string; description: string; noData?: boolean; icon: React.ReactNode }) {
     const text = noData ? "No data available" : "Loading ...";
     
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-2">
-                    <Monitor className="h-5 w-5" />
+                    {icon}
                     {title}
                 </CardTitle>
                 <CardDescription>
@@ -902,11 +911,14 @@ function UserAgentPieChartSkeleton({ title, description, noData = false }: { tit
     );
 }
 
-function UserAgentTableSkeleton({ title, description }: { title: string; description: string }) {
+function UserAgentTableSkeleton({ title, description, icon }: { title: string; description: string; icon: React.ReactNode }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="mb-2">{title}</CardTitle>
+                <CardTitle className="flex items-center gap-2 mb-2">
+                    {icon}
+                    {title}
+                </CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="h-full">
@@ -943,6 +955,7 @@ function Statistics() {
     const [lastDays, setLastDays] = useState<number>(30);
 
     // Data states
+    const [loading, setLoading] = useState<boolean>(false);
     const [countryStatistics, setCountryStatistics] = useState<AreaStatistics[]>([]);
     const [continentStatistics, setContinentStatistics] = useState<AreaStatistics[]>([]);
     const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -976,6 +989,7 @@ function Statistics() {
         if (domains.length === 0) return;
 
         const loadStatisticsData = async () => {
+            setLoading(true);
             try {
                 const domainId = selectedDomain?.id || null;
                 
@@ -1000,6 +1014,8 @@ function Statistics() {
                 setUserAgentDistribution(userAgentData);
             } catch (error) {
                 toast.error("Failed to load statistics data");
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -1018,8 +1034,8 @@ function Statistics() {
 
             <div className="space-y-6 mt-6">
                 {/* Latest visitors */}
-                {visitors.length === 0 ? (
-                    <LatestVisitorsSkeleton />
+                {loading ? (
+                    <LatestVisitorsSkeleton icon={<Clock className="h-5 w-5" />} />
                 ) : (
                     <Card>
                         <CardHeader>
@@ -1047,7 +1063,7 @@ function Statistics() {
 
                 {/* Continent Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {continentStatistics.length === 0 ? (
+                    {loading ? (
                         <MapStatisticsSkeleton
                             title="Visitors by Continent"
                             description="Distribution of visitors by continent"
@@ -1063,10 +1079,11 @@ function Statistics() {
                             description="Distribution of visitors by continent"
                         />
                     )}
-                    {continentStatistics.length === 0 ? (
+                    {loading ? (
                         <AreaStatisticsTableSkeleton
                             title="Continents"
                             description="Visitor statistics by continent"
+                            icon={<Globe className="h-5 w-5" />}
                         />
                     ) : (
                         <AreaStatisticsTable
@@ -1075,13 +1092,14 @@ function Statistics() {
                             title="Continents"
                             description="Visitor statistics by continent"
                             showFlag={true}
+                            icon={<Globe className="h-5 w-5" />}
                         />
                     )}
                 </div>
 
                 {/* Country Statistics */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {countryStatistics.length === 0 ? (
+                    {loading ? (
                         <MapStatisticsSkeleton
                             title="Visitors by Country"
                             description="Distribution of visitors by country"
@@ -1098,10 +1116,11 @@ function Statistics() {
                             description="Distribution of visitors by country"
                         />
                     )}
-                    {countryStatistics.length === 0 ? (
+                    {loading ? (
                         <AreaStatisticsTableSkeleton
                             title="Countries"
                             description="Visitor statistics by country"
+                            icon={<MapPin className="h-5 w-5" />}
                         />
                     ) : (
                         <AreaStatisticsTable
@@ -1109,16 +1128,18 @@ function Statistics() {
                             statistics={countryStatistics}
                             title="Countries"
                             description="Visitor statistics by country"
+                            icon={<MapPin className="h-5 w-5" />}
                         />
                     )}
                 </div>
 
                 {/* User Agent Distribution */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {userAgentDistribution.length === 0 ? (
+                    {loading ? (
                         <UserAgentPieChartSkeleton
                             title="Browser Distribution"
                             description="Distribution of visitors by browser"
+                            icon={<Monitor className="h-5 w-5" />}
                         />
                     ) : (
                         <UserAgentPieChart
@@ -1126,12 +1147,14 @@ function Statistics() {
                             userAgentDistribution={userAgentDistribution}
                             title="Browser Distribution"
                             description="Distribution of visitors by browser"
+                            icon={<Monitor className="h-5 w-5" />}
                         />
                     )}
-                    {userAgentDistribution.length === 0 ? (
+                    {loading ? (
                         <UserAgentTableSkeleton
                             title="Browsers"
                             description="Visitor statistics by browser"
+                            icon={<Monitor className="h-5 w-5" />}
                         />
                     ) : (
                         <UserAgentTable
@@ -1139,6 +1162,7 @@ function Statistics() {
                             userAgentDistribution={userAgentDistribution}
                             title="Browsers"
                             description="Visitor statistics by browser"
+                            icon={<Monitor className="h-5 w-5" />}
                         />
                     )}
                 </div>

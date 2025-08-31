@@ -29,6 +29,8 @@ import InstallButton from "@/components/InstallButton";
 import SettingsApiService from "@/services/apiSettings";
 import type { NotificationPreferences } from "@/services/apiSettings";
 
+import { APP_VERSION } from "@/utils/version";
+
 import {
     Settings as SettingsIcon,
     BellRing,
@@ -54,7 +56,7 @@ interface SettingsHeaderProps {
 
 function SettingsHeader({ handleSaveSettings }: SettingsHeaderProps) {
     return (
-        <div className="flex items-center justify-between mb-6 h-12">
+        <div className="flex items-center justify-between mb-6 min-h-12">
             <div className="flex items-center gap-2">
                 <SettingsIcon className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Settings</h1>
@@ -71,7 +73,7 @@ function SettingsHeader({ handleSaveSettings }: SettingsHeaderProps) {
 function LoadingSkeleton() {
     return (
         <div>
-            <div className="flex items-center justify-between mb-6 h-12">
+            <div className="flex items-center justify-between mb-6 min-h-12">
                 <div className="flex items-center gap-2">
                     <SettingsIcon className="h-6 w-6" />
                     <h1 className="text-2xl font-bold">Settings</h1>
@@ -538,6 +540,15 @@ function ClearCacheCard() {
     );
 }
 
+// Version Section Component
+function VersionSection() {
+    return (
+        <div className="text-sm text-muted-foreground mt-6">
+            v{APP_VERSION}
+        </div>
+    );
+}
+
 // Main Settings Component
 function Settings() {
     const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences | null>(null);
@@ -646,6 +657,7 @@ function Settings() {
                     <ClearCacheCard />
                 </div>
             </div>
+            <VersionSection />
         </TooltipProvider>
     );
 }

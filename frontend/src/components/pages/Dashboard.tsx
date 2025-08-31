@@ -357,7 +357,7 @@ function Dashboard() {
     return (
         <div>
             {/* Header */}
-            <div className="flex items-center gap-2 mb-6 h-12">
+            <div className="flex items-center gap-2 mb-6 min-h-12">
                 <Gauge className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Dashboard</h1>
             </div>
