@@ -3,8 +3,9 @@ import { defineConfig, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { VitePWA } from "vite-plugin-pwa"
+import { readFileSync } from "fs"
 
-import pkg from "./package.json";
+const version = readFileSync(path.resolve(__dirname, "../version.txt"), "utf-8").trim()
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -27,7 +28,7 @@ export default defineConfig(({ mode }) => {
                     ],
                     injectionPoint: "self.__WB_MANIFEST",
                     additionalManifestEntries: [
-                        { url: "/", revision: pkg.version }
+                        { url: "/", revision: version }
                     ]
                 },
                 manifest: {
@@ -77,6 +78,8 @@ export default defineConfig(({ mode }) => {
         },
         define: {
             __APP_ENV__: JSON.stringify(env.APP_ENV || mode),
+            __APP_VERSION__: JSON.stringify(version),
+            global: {},  // make variables available for development
         },
         build: {
             outDir: "./dist",

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-visitor-geolocator"
-version = "0.2.3"
+dynamic = ["version"]
 description = "A Django app for geolocating website visitors"
 readme = "README.md"
 authors = [
@@ -45,3 +45,6 @@ visitor_geolocator = "backend/visitor_geolocator"
 "visitor_geolocator.frontend" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
 "visitor_geolocator.notifications" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
 "visitor_geolocator.statistics" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt", "management/*.py", "management/*/*.py", "data/*.geojson"]
+
+[tool.setuptools.dynamic]
+version = {file = "version.txt"}
