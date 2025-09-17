@@ -185,7 +185,7 @@ class GeolocationService:
             return GeolocationService._create_localhost_visitor(ip_address)
 
         cache_key = f"visitor_ipapi_{ip_address}"
-        url = f"https://ip-api.com/json/{ip_address}"
+        url = f"http://ip-api.com/json/{ip_address}"
 
         visitor_data = GeolocationService._get_cached_or_fetch_data(
             cache_key, url, ignore_cache
