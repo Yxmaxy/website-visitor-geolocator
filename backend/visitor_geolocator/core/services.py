@@ -122,7 +122,7 @@ class GeolocationService:
             try:
                 visitor_data = response.json()
                 cache.set(cache_key, visitor_data, timeout=60 * 60 * 24)  # 24 hours
-            except requests.exceptions.JSONDecodeError:
+            except requests.exceptions.RequestException:
                 return None
         return visitor_data
 
@@ -151,6 +151,9 @@ class GeolocationService:
     ) -> Optional[Visitor]:
         if ip_address in ["127.0.0.1", "localhost"]:
             return GeolocationService._create_localhost_visitor(ip_address)
+
+        if not access_token:
+            return None
 
         cache_key = f"visitor_ipinfo_{ip_address}"
         url = f"https://ipinfo.io/{ip_address}?token={access_token}"
