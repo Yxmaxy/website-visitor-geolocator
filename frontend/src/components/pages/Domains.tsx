@@ -23,8 +23,8 @@ import {
     AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-import { DomainApiService } from "@/services/apiDomain";
-import type { Domain, DomainCreate, DomainUpdate } from "@/services/apiDomain";
+import { DomainApiService } from "@/services/api/apiDomain";
+import type { Domain, DomainCreate, DomainUpdate } from "@/services/api/apiDomain";
 import { copyToClipboard } from "@/services/clipboard";
 
 import { Plus, Edit, Trash2, Copy, Eye, EyeOff, Code2, LineChart, GlobeIcon } from "lucide-react";

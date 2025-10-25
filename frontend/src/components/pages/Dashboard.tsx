@@ -4,8 +4,8 @@ import { BarChart3, Globe, Settings, Gauge } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import type { Visitor } from "@/services/apiStatistics";
-import StatisticsApiService from "@/services/apiStatistics";
+import type { Visitor } from "@/services/api/apiStatistics";
+import StatisticsApiService from "@/services/api/apiStatistics";
 
 import { VisitorDataTable } from "@/components/VisitorDataTable";
 import NavigationCard from "@/components/NavigationCard";

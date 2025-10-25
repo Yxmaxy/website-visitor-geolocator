@@ -4,7 +4,8 @@ interface CacheItem<T> {
     expiresAt: number;
 }
 
-class CacheService {
+
+class CacheServiceIndexedDB {
     private static dbName = "WebsiteVisitorGeolocatorCache";
     private static dbVersion = 1;
     private static storeName = "cache";
@@ -129,28 +130,20 @@ class CacheService {
             request.onsuccess = () => resolve();
         });
     }
+}
 
-    // Fallback to localStorage for small data (under 1MB)
-    static async setWithFallback<T>(key: string, data: T, ttlMs: number = 3 * 24 * 60 * 60 * 1000): Promise<void> {
-        const dataSize = JSON.stringify(data).length;
-        const oneMB = 1024 * 1024;
 
-        if (dataSize < oneMB) {
-            // Use localStorage for small data
-            const item: CacheItem<T> = {
-                data,
-                timestamp: Date.now(),
-                expiresAt: Date.now() + ttlMs
-            };
-            localStorage.setItem(key, JSON.stringify(item));
-        } else {
-            // Use IndexedDB for large data
-            await this.set(key, data, ttlMs);
-        }
+class CacheServiceLocalStorage {
+    static async set<T>(key: string, data: T, ttlMs: number = 3 * 24 * 60 * 60 * 1000): Promise<void> {
+        const item: CacheItem<T> = {
+            data,
+            timestamp: Date.now(),
+            expiresAt: Date.now() + ttlMs
+        };
+        localStorage.setItem(key, JSON.stringify(item));
     }
 
-    static async getWithFallback<T>(key: string): Promise<T | null> {
-        // Try localStorage first
+    static async get<T>(key: string): Promise<T | null> {
         const localStorageItem = localStorage.getItem(key);
         if (localStorageItem) {
             try {
@@ -164,15 +157,42 @@ class CacheService {
                 localStorage.removeItem(key);
             }
         }
-
-        // Try IndexedDB
-        return await this.get<T>(key);
+        return null;
     }
 
-    static async deleteWithFallback(key: string): Promise<void> {
+    static async delete(key: string): Promise<void> {
         localStorage.removeItem(key);
-        await this.delete(key);
+    }
+
+    static async clear(): Promise<void> {
+        localStorage.clear();
     }
 }
 
-export default CacheService;
+
+export default class CacheService {
+    static async set<T>(key: string, data: T, ttlMs: number = 3 * 24 * 60 * 60 * 1000): Promise<void> {
+        const dataSize = JSON.stringify(data).length;
+        const oneMB = 1024 * 1024;
+
+        if (dataSize < oneMB) {
+            await CacheServiceLocalStorage.set(key, data, ttlMs);
+        } else {
+            await CacheServiceIndexedDB.set(key, data, ttlMs);
+        }
+    }
+
+    static async get<T>(key: string): Promise<T | null> {
+        return await CacheServiceLocalStorage.get<T>(key) || await CacheServiceIndexedDB.get<T>(key);
+    }
+
+    static async delete(key: string): Promise<void> {
+        await CacheServiceLocalStorage.delete(key);
+        await CacheServiceIndexedDB.delete(key);
+    }
+
+    static async clear(): Promise<void> {
+        await CacheServiceLocalStorage.clear();
+        await CacheServiceIndexedDB.clear();
+    }
+}

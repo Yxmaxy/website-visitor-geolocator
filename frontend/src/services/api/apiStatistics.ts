@@ -1,5 +1,5 @@
-import { ApiService } from "@/services/api";
-import CacheService from "@/services/cacheService";
+import { ApiService } from "@/services/api/api";
+import CacheService from "@/services/cache";
 import type { FeatureCollection } from "geojson";
 
 export enum LevelChoices {
@@ -10,18 +10,6 @@ export enum LevelChoices {
 export interface AreaStatistics {
     area_name: string;
     visitor_count: number;
-}
-
-export interface AreaGeometry {
-    type: "FeatureCollection";
-    features: Array<{
-        type: "Feature";
-        properties: {
-            name: string;
-            level: number;
-        };
-        geometry: any; // GeoJSON geometry
-    }>;
 }
 
 export interface Visitor {
@@ -56,19 +44,16 @@ class StatisticsApiService {
         const cacheKey = `area_geometries_${level}`;
         const cacheTime = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
-        // Check if cached result is available and not expired
-        const cachedGeometries = await CacheService.getWithFallback<FeatureCollection>(cacheKey);
+        const cachedGeometries = await CacheService.get<FeatureCollection>(cacheKey);
         if (cachedGeometries) {
             return cachedGeometries;
         }
 
-        // fetch from API if not cached or expired
         const queryString = this.buildQueryString({ level });
         const geometries = await ApiService.get<any>(`/statistics/geometries/?${queryString}`);
 
-        // cache the result with automatic expiration
         if (geometries && geometries.features.length > 0) {
-            await CacheService.setWithFallback(cacheKey, geometries, cacheTime);
+            await CacheService.set(cacheKey, geometries, cacheTime);
         }
         return geometries;
     }

@@ -17,10 +17,10 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { AreaStatistics, Visitor, UserAgentDistribution } from "@/services/apiStatistics";
-import StatisticsApiService, { LevelChoices } from "@/services/apiStatistics";
-import { DomainApiService } from "@/services/apiDomain";
-import type { Domain } from "@/services/apiDomain";
+import type { AreaStatistics, Visitor, UserAgentDistribution } from "@/services/api/apiStatistics";
+import StatisticsApiService, { LevelChoices } from "@/services/api/apiStatistics";
+import { DomainApiService } from "@/services/api/apiDomain";
+import type { Domain } from "@/services/api/apiDomain";
 import { getCountryFlag } from "@/services/flags";
 import { cn } from "@/services/lib/shadcn-utils";
 

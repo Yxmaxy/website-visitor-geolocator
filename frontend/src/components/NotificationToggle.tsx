@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 
-import PushNotificationService from "@/services/pushNotifications";
+import PushNotificationService from "@/services/notifications";
 import { toast } from "sonner";
 
 
