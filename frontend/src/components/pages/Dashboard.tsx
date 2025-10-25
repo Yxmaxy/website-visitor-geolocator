@@ -1,175 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { Link } from "react-router";
+import { BarChart3, Globe, Settings, Gauge } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CustomChart } from "@/components/ui/custom-chart";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 import type { Visitor } from "@/services/apiStatistics";
 import StatisticsApiService from "@/services/apiStatistics";
 
-import {
-    BarChart3,
-    Globe,
-    Settings,
-    TrendingUp,
-    ArrowRight,
-    Gauge,
-} from "lucide-react";
-
 import { VisitorDataTable } from "@/components/VisitorDataTable";
-
-// Navigation Card Component
-interface NavigationCardProps {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-    href: string;
-}
-
-function NavigationCard({ title, description, icon, href }: NavigationCardProps) {
-    return (
-        <Link to={href} className="block">
-            <Card className="cursor-pointer group hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                        <div className={`p-2 rounded-lg bg-primary`}>
-                            {icon}
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform duration-200" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <CardTitle className="text-lg mb-2">{title}</CardTitle>
-                    <CardDescription className="text-sm">{description}</CardDescription>
-                </CardContent>
-            </Card>
-        </Link>
-    );
-}
-
-// Visitor Trends Chart Component
-interface VisitorTrendsChartProps {
-    visitors: Visitor[];
-    title: string;
-    description: string;
-}
-
-function VisitorTrendsChart({ visitors, title, description }: VisitorTrendsChartProps) {
-    // Generate data for last 7, 14, and 30 days
-    const generateTrendData = () => {
-        const periods = [7, 14, 30];
-        const data = periods.map(days => {
-            const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - days);
-            
-            const visitorsInPeriod = visitors.filter(visitor => 
-                new Date(visitor.created_at) >= cutoffDate
-            );
-            
-            return {
-                period: `${days} days`,
-                visitors: visitorsInPeriod.length
-            };
-        });
-        
-        return data;
-    };
-
-    const chartData = generateTrendData();
-
-    return (
-        <Card className="!pb-0">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    {title}
-                </CardTitle>
-                <CardDescription>
-                    {description}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="[& *]:outline-transparent">
-                    <CustomChart
-                        chartType="line"
-                        data={chartData}
-                        config={{
-                            type: "line",
-                            dataKey: "visitors",
-                            stroke: "var(--chart-1)",
-                            strokeWidth: 2
-                        }}
-                        xAxisDataKey="period"
-                        xAxisAngle={-45}
-                        xAxisHeight={80}
-                        yAxisWidth={40}
-                        height={300}
-                    />
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-// Skeleton Components
-function VisitorTrendsSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-2">
-                    <Skeleton className="h-5 w-5" />
-                    <Skeleton className="h-6 w-32" />
-                </div>
-                <Skeleton className="h-4 w-48" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-[300px] w-full" />
-            </CardContent>
-        </Card>
-    );
-}
-
-function LatestVisitorsSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Skeleton className="h-5 w-5" />
-                        <Skeleton className="h-6 w-32" />
-                    </div>
-                    <Skeleton className="h-8 w-32" />
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="rounded-md border">
-                    <div className="p-4 space-y-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="flex gap-4">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-4 w-32" />
-                                <Skeleton className="h-4 w-20" />
-                                <Skeleton className="h-4 w-28" />
-                                <Skeleton className="h-4 w-40" />
-                                <Skeleton className="h-4 w-32" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="flex items-center justify-between">
-                    <Skeleton className="h-8 w-32" />
-                    <div className="flex gap-2">
-                        <Skeleton className="h-8 w-8" />
-                        <Skeleton className="h-8 w-8" />
-                        <Skeleton className="h-8 w-8" />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
+import NavigationCard from "@/components/NavigationCard";
 
 // Main Dashboard Component
 function Dashboard() {
@@ -225,30 +64,15 @@ function Dashboard() {
                     />
                 </div>
 
-                {/* Visitor Trends Chart */}
-                {visitorsLoading ? (
-                    <VisitorTrendsSkeleton />
-                ) : visitors.length > 5 && (
-                    <VisitorTrendsChart
-                        visitors={visitors}
-                        title="Visitor Trends"
-                        description="Number of visitors in the last 7, 14, and 30 days"
-                    />
-                )}
-
                 {/* Latest Visitors Table */}
-                {visitorsLoading ? (
-                    <LatestVisitorsSkeleton />
-                ) : (
-                    <Card>
-                        <CardContent>
-                            <VisitorDataTable
-                                visitors={visitors}
-                                pageSize={5}
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                <Card>
+                    <CardContent>
+                        <VisitorDataTable
+                            visitors={visitors}
+                            pageSize={5}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

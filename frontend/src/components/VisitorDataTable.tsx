@@ -8,7 +8,6 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import type { Visitor } from "@/services/apiStatistics";
-import { IPDetailsModal } from "@/components/IPDetailsModal";
 
 // Latest Visitors Data Table Component
 interface VisitorTableProps {
@@ -175,14 +174,6 @@ export const VisitorDataTable = memo(function VisitorDataTable({ visitors, pageS
             </div>
 
             <DataTablePagination table={table} />
-            {selectedIP && (
-                <IPDetailsModal
-                    isOpen={isModalOpen}
-                    onClose={closeModal}
-                    ipAddress={selectedIP}
-                    domainId={domainId}
-                />
-            )}
         </div>
     );
 });
