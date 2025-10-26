@@ -73,7 +73,7 @@ class PushNotificationService {
             // Subscribe to push notifications
             const subscription = await this.registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey).buffer as ArrayBuffer
+                applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey)
             });
 
             this.subscription = subscription;
@@ -140,7 +140,7 @@ class PushNotificationService {
         }
     }
 
-    private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    private urlBase64ToUint8Array(base64String: string): BufferSource {
         const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
         const base64 = (base64String + padding)
             .replace(/-/g, "+")

@@ -149,7 +149,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Exclude visitor tracking endpoint from corsheaders middleware
-CORS_URLS_REGEX = r"^(?!.*visitor/).*$"
+CORS_URLS_REGEX = r"^(?!.*/track-visitor/).*$"
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [

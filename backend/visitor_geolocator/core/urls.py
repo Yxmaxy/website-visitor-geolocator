@@ -5,9 +5,9 @@ app_name = "wvg_core"
 
 urlpatterns = [
     path(
-        "visitor/",
+        "track-visitor/",
         views.track_visitor,
-        name="website_visitor_geolocator_visitor",
+        name="website_visitor_geolocator_track_visitor",
     ),
     path(
         "tracking.js",

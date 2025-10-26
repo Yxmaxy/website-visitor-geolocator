@@ -1,8 +1,9 @@
-import json
 from rest_framework.request import Request
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 from visitor_geolocator.statistics.models import Area, LevelChoices
 from visitor_geolocator.statistics.services import StatisticsService
@@ -11,7 +12,7 @@ from visitor_geolocator.statistics.serializers import (
     AreaGeometriesResponseSerializer,
     AreaStatisticsSerializer,
     AreaStatisticsResponseSerializer,
-    StatisticsDayRangeSerializer,
+    StatisticsSerializer,
     UserAgentDistributionSerializer,
     VisitorSerializer,
 )
@@ -22,45 +23,21 @@ from visitor_geolocator.frontend.permissions import (
 
 
 class AreaGeometriesAPIView(APIView):
-    """API view for area geometries only"""
+    """API view for area geometries"""
 
     permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
     def get(self, request: Request):
         """Get area geometries for a specific level"""
-        # Validate query parameters
         serializer = AreaGeometriesQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        level_param = serializer.validated_data.get("level", LevelChoices.COUNTRY)
-
+        level_param: int = serializer.validated_data.get("level", LevelChoices.COUNTRY)
         areas = Area.objects.filter(level=level_param)
-
-        # Convert to GeoJSON format
-        geojson_features = []
-        for area in areas:
-            if area.geometry and area.geometry.valid:
-                simplified_geometry = area.simplified_geometry
-                geojson_geometry: dict = json.loads(simplified_geometry.geojson)
-
-                if (
-                    geojson_geometry
-                    and geojson_geometry.get("type")
-                    and geojson_geometry.get("coordinates")
-                ):
-                    feature_data = {
-                        "type": "Feature",
-                        "properties": {
-                            "name": area.name,
-                            "level": level_param,
-                        },
-                        "geometry": geojson_geometry,
-                    }
-                    geojson_features.append(feature_data)
 
         geojson_data = {
             "type": "FeatureCollection",
-            "features": geojson_features,
+            "features": [feature for area in areas if (feature := area.geojson_feature) is not None],
         }
 
         response_serializer = AreaGeometriesResponseSerializer(data=geojson_data)
@@ -79,16 +56,18 @@ class AreaStatisticsAPIView(APIView):
         serializer = AreaStatisticsSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        domain_id = serializer.validated_data.get("domain_id")
-        days = serializer.validated_data.get("days", 30)
-        level = serializer.validated_data.get("level", LevelChoices.COUNTRY)
+        level: int = serializer.validated_data.get("level", LevelChoices.COUNTRY)
+
+        from_date = serializer.validated_data.get("from_date")
+        to_date = serializer.validated_data.get("to_date")
+        domain_id: int = serializer.validated_data.get("domain_id")
 
         wvg_user = UserService.get_wvg_user(request.user)
         domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
-        data = StatisticsService.get_visitors_by_area(domains, days, level)
+        data = StatisticsService.get_visitors_by_area(domains, from_date, to_date, level)
 
         response_serializer = AreaStatisticsResponseSerializer(data=data, many=True)
         response_serializer.is_valid(raise_exception=True)
@@ -96,29 +75,43 @@ class AreaStatisticsAPIView(APIView):
         return Response(response_serializer.validated_data)
 
 
-class LatestVisitorsAPIView(APIView):
-    """API view for latest visitors"""
+class VisitorListAPIView(ListAPIView):
+    """API view for visitor list"""
+
+    class CustomPagination(PageNumberPagination):
+        page_size = 5
+        page_size_query_param = "page_size"
+        max_page_size = 100
+
+        def get_paginated_response(self, data):
+            return Response({
+                "count": self.page.paginator.count,
+                "total_pages": self.page.paginator.num_pages,
+                "next": self.page.next_page_number() if self.page.has_next() else None,
+                "previous": self.page.previous_page_number() if self.page.has_previous() else None,
+                "results": data,
+            })
+
 
     permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
+    serializer_class = VisitorSerializer
+    pagination_class = CustomPagination
 
-    def get(self, request):
-        """Get latest visitors"""
-        serializer = StatisticsDayRangeSerializer(data=request.query_params)
+    def get_queryset(self):
+        serializer = StatisticsSerializer(data=self.request.query_params)
         serializer.is_valid(raise_exception=True)
 
         domain_id = serializer.validated_data.get("domain_id")
-        days = serializer.validated_data.get("days", 30)
+        from_date = serializer.validated_data.get("from_date")
+        to_date = serializer.validated_data.get("to_date")
 
-        wvg_user = UserService.get_wvg_user(request.user)
+        wvg_user = UserService.get_wvg_user(self.request.user)
         domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
         domains = domains.order_by("id")
-        visitors_queryset = StatisticsService.get_visitors(domains, days)
-
-        visitor_serializer = VisitorSerializer(visitors_queryset, many=True)
-        return Response(visitor_serializer.data)
+        return StatisticsService.get_visitors(domains, from_date, to_date)
 
 
 class UserAgentDistributionAPIView(APIView):
@@ -128,18 +121,19 @@ class UserAgentDistributionAPIView(APIView):
 
     def get(self, request):
         """Get user agent distribution"""
-        serializer = StatisticsDayRangeSerializer(data=request.query_params)
+        serializer = StatisticsSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
         domain_id = serializer.validated_data.get("domain_id")
-        days = serializer.validated_data.get("days", 30)
+        from_date = serializer.validated_data.get("from_date")
+        to_date = serializer.validated_data.get("to_date")
 
         wvg_user = UserService.get_wvg_user(request.user)
         domains = DomainService.get_owner_domains(wvg_user)
         if domain_id:
             domains = domains.filter(id=domain_id)
 
-        data = StatisticsService.get_user_agent_distribution(domains, days)
+        data = StatisticsService.get_user_agent_distribution(domains, from_date, to_date)
 
         response_serializer = UserAgentDistributionSerializer(data=data, many=True)
         response_serializer.is_valid(raise_exception=True)

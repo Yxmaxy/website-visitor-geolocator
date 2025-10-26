@@ -4,36 +4,9 @@ from visitor_geolocator.core.models import Visitor
 from visitor_geolocator.statistics.models import LevelChoices
 
 
-class StatisticsDayRangeSerializer(serializers.Serializer):
-    """
-    Base serializer for statistics range query parameters.
-    Used for statistic endpoints which support last x days range.
-    """
-
-    domain_id = serializers.IntegerField(required=False, allow_null=True)
-    days = serializers.IntegerField(default=30, min_value=1, max_value=365)
-
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...
-
-
-class AreaStatisticsSerializer(StatisticsDayRangeSerializer):
-    level = serializers.IntegerField(required=False, default=LevelChoices.COUNTRY)
-
-
-class AreaStatisticsResponseSerializer(serializers.Serializer):
-    """Serializer for area statistics response"""
-
-    area_name = serializers.CharField()
-    visitor_count = serializers.IntegerField()
-
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...
-
+# Area Geometries
 
 class AreaGeometriesQuerySerializer(serializers.Serializer):
-    """Serializer for area geometries query parameters"""
-
     level = serializers.IntegerField(required=False, default=LevelChoices.COUNTRY)
 
     def validate_level(self, value):
@@ -41,29 +14,41 @@ class AreaGeometriesQuerySerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid level value")
         return value
 
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...
-
-
-class AreaGeometryFeatureSerializer(serializers.Serializer):
-    """Serializer for individual area geometry feature"""
-
-    type = serializers.CharField(default="Feature")
-    properties = serializers.DictField()
-    geometry = serializers.DictField()
-
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...
-
 
 class AreaGeometriesResponseSerializer(serializers.Serializer):
-    """Serializer for area geometries response"""
-
     type = serializers.CharField(default="FeatureCollection")
-    features = AreaGeometryFeatureSerializer(many=True)
+    features = serializers.ListField(child=serializers.DictField())
 
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...
+
+# Statistics
+
+class StatisticsSerializer(serializers.Serializer):
+    """
+    Base serializer for statistics query parameters.
+    """
+    from_date = serializers.DateField(required=False, allow_null=True)
+    to_date = serializers.DateField(required=False, allow_null=True)
+
+    domain_id = serializers.IntegerField(required=False, allow_null=True)
+    ip_address = serializers.CharField(required=False, allow_null=True)
+
+    def validate(self, attrs: dict):
+        from_date = attrs.get("from_date")
+        to_date = attrs.get("to_date")
+        if from_date and to_date and from_date > to_date:
+            raise serializers.ValidationError("From date must be before to date")
+        return attrs
+
+
+class AreaStatisticsSerializer(StatisticsSerializer, AreaGeometriesQuerySerializer):
+    """Serializer for area statistics query parameters"""
+
+
+class AreaStatisticsResponseSerializer(serializers.Serializer):
+    """Serializer for area statistics response"""
+
+    area_name = serializers.CharField()
+    visitor_count = serializers.IntegerField()
 
 
 class VisitorSerializer(serializers.ModelSerializer):
@@ -73,10 +58,7 @@ class VisitorSerializer(serializers.ModelSerializer):
         model = Visitor
         fields = "__all__"
 
-    domain = serializers.SerializerMethodField()
-
-    def get_domain(self, obj: Visitor) -> str:
-        return str(obj.domain)
+    domain = serializers.ReadOnlyField(source="domain.domain")
 
 
 class UserAgentDistributionSerializer(serializers.Serializer):
@@ -84,6 +66,3 @@ class UserAgentDistributionSerializer(serializers.Serializer):
 
     browser = serializers.CharField()
     count = serializers.IntegerField()
-
-    def create(self, validated_data): ...
-    def update(self, instance, validated_data): ...

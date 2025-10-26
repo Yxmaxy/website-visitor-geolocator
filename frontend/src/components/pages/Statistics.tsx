@@ -33,7 +33,7 @@ import {
     Monitor,
 } from "lucide-react";
 
-import { VisitorDataTable } from "@/components/VisitorDataTable";
+import { VisitorDataTable } from "@/components/visitor-data-table/Table";
 
 // Statistics Header Component
 interface StatisticsHeaderProps {

@@ -1,3 +1,6 @@
+import json
+from typing import Optional
+
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import MultiPolygon
@@ -33,3 +36,25 @@ class Area(models.Model):
         if self.level == LevelChoices.COUNTRY:
             return self.geometry.simplify(0.001, preserve_topology=True)
         return self.geometry.simplify(0.7, preserve_topology=True)
+
+    @property
+    def geojson_feature(self) -> Optional[dict]:
+        if self.geometry and self.geometry.valid:
+            simplified_geometry = self.simplified_geometry
+            geojson_geometry: dict = json.loads(simplified_geometry.geojson)
+
+            if (
+                geojson_geometry
+                and geojson_geometry.get("type")
+                and geojson_geometry.get("coordinates")
+            ):
+                feature_data = {
+                    "type": "Feature",
+                    "properties": {
+                        "name": self.name,
+                        "level": self.level,
+                    },
+                    "geometry": geojson_geometry,
+                }
+                return feature_data
+        return None

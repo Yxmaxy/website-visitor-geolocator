@@ -1,38 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
 import { BarChart3, Globe, Settings, Gauge } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import type { Visitor } from "@/services/api/apiStatistics";
-import StatisticsApiService from "@/services/api/apiStatistics";
-
-import { VisitorDataTable } from "@/components/VisitorDataTable";
+import VisitorDataTable from "@/components/visitor-data-table/Table";
 import NavigationCard from "@/components/NavigationCard";
 
-// Main Dashboard Component
+
 function Dashboard() {
-    const [visitors, setVisitors] = useState<Visitor[]>([]);
-    const [visitorsLoading, setVisitorsLoading] = useState(true);
-
-    // Load visitors data
-    const loadVisitors = useCallback(async () => {
-        try {
-            setVisitorsLoading(true);
-            const visitorsData = await StatisticsApiService.getLatestVisitors(null, 30);
-            setVisitors(visitorsData);
-        } catch (error) {
-            toast.error("Failed to load visitors data");
-        } finally {
-            setVisitorsLoading(false);
-        }
-    }, []);
-
-    // Load data on mount
-    useEffect(() => {
-        loadVisitors();
-    }, [loadVisitors]);
-
     return (
         <div>
             {/* Header */}
@@ -68,8 +42,8 @@ function Dashboard() {
                 <Card>
                     <CardContent>
                         <VisitorDataTable
-                            visitors={visitors}
-                            pageSize={5}
+                            pageSize={3}
+                            preloadedPages={2}
                         />
                     </CardContent>
                 </Card>

@@ -1,10 +1,19 @@
 import { ApiService } from "@/services/api/api";
+
 import CacheService from "@/services/cache";
 import type { FeatureCollection } from "geojson";
 
 export enum LevelChoices {
     COUNTRY = 1,
     CONTINENT = 0,
+}
+
+export interface PaginatedResponse<T> {
+    count: number;
+    next?: number;
+    previous?: number;
+    results: T[];
+    total_pages: number;
 }
 
 export interface AreaStatistics {
@@ -28,11 +37,13 @@ export interface UserAgentDistribution {
 }
 
 class StatisticsApiService {
-    static buildQueryString(params: any): string {
+    private static geometryPromises: Record<string, Promise<FeatureCollection>> = {};
+
+    static buildQueryString(params: Record<string, any>): string {
         // helper function to build query string from params
         const searchParams = new URLSearchParams();
         for (const [key, value] of Object.entries(params)) {
-            if (value !== undefined) {
+            if (value !== undefined && value !== null && typeof value !== "undefined") {
                 searchParams.append(key, value?.toString() ?? "");
             }
         }
@@ -49,26 +60,38 @@ class StatisticsApiService {
             return cachedGeometries;
         }
 
-        const queryString = this.buildQueryString({ level });
-        const geometries = await ApiService.get<any>(`/statistics/geometries/?${queryString}`);
+        // returns promise if request is already in progress
+        if (this.geometryPromises[cacheKey]) {
+            return await this.geometryPromises[cacheKey];
+        } else {
+            const queryString = this.buildQueryString({ level });
+            this.geometryPromises[cacheKey] = ApiService.get(`/statistics/geometries/?${queryString}`);
+        }
 
+        const geometries = await this.geometryPromises[cacheKey];
         if (geometries && geometries.features.length > 0) {
             await CacheService.set(cacheKey, geometries, cacheTime);
         }
         return geometries;
     }
 
-    static async getAreaStatistics(domain_id: number | null, level: LevelChoices = LevelChoices.COUNTRY, days: number = 30): Promise<AreaStatistics[]> {
+    static async getAreaStatistics(domain_id?: number, level: LevelChoices = LevelChoices.COUNTRY, days: number = 30): Promise<AreaStatistics[]> {
         const queryString = this.buildQueryString({ domain_id, level, days });
         return ApiService.get<AreaStatistics[]>(`/statistics/area/?${queryString}`);
     }
 
-    static async getLatestVisitors(domain_id: number | null, days: number = 30): Promise<Visitor[]> {
-        const queryString = this.buildQueryString({ domain_id, days });
-        return ApiService.get<Visitor[]>(`/statistics/visitors/?${queryString}`);
+    static async getLatestVisitors(
+        domain_id?: number,
+        from_date?: string,
+        to_date?: string,
+        page?: number,
+        page_size?: number,
+    ): Promise<PaginatedResponse<Visitor>> {
+        const queryString = this.buildQueryString({ domain_id, from_date, to_date, page, page_size });
+        return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 
-    static async getUserAgentDistribution(domain_id: number | null, days: number = 30): Promise<UserAgentDistribution[]> {
+    static async getUserAgentDistribution(domain_id?: number, days: number = 30): Promise<UserAgentDistribution[]> {
         const queryString = this.buildQueryString({ domain_id, days });
         return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
     }
