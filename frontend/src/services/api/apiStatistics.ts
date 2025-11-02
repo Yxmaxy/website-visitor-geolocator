@@ -86,8 +86,9 @@ class StatisticsApiService {
         to_date?: string,
         page?: number,
         page_size?: number,
+        ordering?: string,
     ): Promise<PaginatedResponse<Visitor>> {
-        const queryString = this.buildQueryString({ domain_id, from_date, to_date, page, page_size });
+        const queryString = this.buildQueryString({ domain_id, from_date, to_date, page, page_size, ordering });
         return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 

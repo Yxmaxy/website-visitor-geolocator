@@ -27,7 +27,7 @@ class StatisticsService:
         if date_filters:
             queryset = queryset.filter(**date_filters)
 
-        return queryset.order_by("-created_at")
+        return queryset
 
     @staticmethod
     def get_visitors_by_area(

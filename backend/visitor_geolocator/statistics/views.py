@@ -4,6 +4,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import OrderingFilter
 
 from visitor_geolocator.statistics.models import Area, LevelChoices
 from visitor_geolocator.statistics.services import StatisticsService
@@ -96,6 +97,9 @@ class VisitorListAPIView(ListAPIView):
     permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
     serializer_class = VisitorSerializer
     pagination_class = CustomPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["ip_address", "location_description", "domain__domain", "created_at", "user_agent"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         serializer = StatisticsSerializer(data=self.request.query_params)
