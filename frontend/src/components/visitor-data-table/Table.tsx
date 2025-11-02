@@ -1,9 +1,10 @@
-import { useState, useEffect, memo, useMemo } from "react";
+import { useState, useEffect, memo, useMemo, useRef } from "react";
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
 import type { SortingState, PaginationState } from "@tanstack/react-table";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import StatisticsApiService, { type PaginatedResponse, type Visitor } from "@/services/api/apiStatistics";
 import { useVisitorColumns } from "./columns";
@@ -35,6 +36,20 @@ function VisitorDataTable({
 
     const [totalPages, setTotalPages] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
+    const isInitialMount = useRef(true);
+
+    // Convert sorting state to backend ordering format
+    const ordering = useMemo(() => {
+        if (sorting.length === 0) {
+            return undefined;  // Use backend default ordering
+        }
+        return sorting
+            .map((sort) => {
+                const prefix = sort.desc ? "-" : "";
+                return `${prefix}${sort.id}`;
+            })
+            .join(",");
+    }, [sorting]);
 
     const loadData = async (backendPage: number) => {
         setIsLoading(true);
@@ -45,18 +60,35 @@ function VisitorDataTable({
             toDate?.toISOString().split("T")[0],
             (backendPage / pagesToPreload) + 1,
             pageSize * pagesToPreload,
+            ordering ?? undefined,
         );
         setIsLoading(false);
         return response;
     };
 
+    // Initial load on mount
     useEffect(() => {
         loadData(0).then((data: PaginatedResponse<Visitor>) => {
             setPaginatedData({ 0: data.results });
             setTotalPages(Math.ceil(data.count / (pageSize)));
         });
+        isInitialMount.current = false;
     }, []);
 
+    // Order changed - clear data, reset to 1st page, and reload
+    useEffect(() => {
+        if (isInitialMount.current) {
+            return;
+        }
+        setPaginatedData({});
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+        loadData(0).then((data: PaginatedResponse<Visitor>) => {
+            setPaginatedData({ 0: data.results });
+            setTotalPages(Math.ceil(data.count / (pageSize)));
+        });
+    }, [ordering]);
+
+    // Page changed - load next page if not already loaded
     useEffect(() => {
         const currentPage = pagination.pageIndex + 1;
         if (paginatedData.hasOwnProperty(currentPage)) {
@@ -72,6 +104,7 @@ function VisitorDataTable({
         }
     }, [pagination.pageIndex, preloadedPages]);
 
+    // Data for the table
     const data = useMemo(() => {
         return Object.values(paginatedData).flat();
     }, [paginatedData]);
@@ -117,8 +150,25 @@ function VisitorDataTable({
 
                     {/* Table Body */}
                     <TableBody>
-                        {
-                            (table.getRowModel().rows.map((row) => (
+                        {isLoading && data.length === 0 ? (
+                            // Skeleton loader when fetching and no data
+                            Array.from({ length: pageSize }).map((_, index) => (
+                                <TableRow key={`skeleton-${index}`}>
+                                    {columns.map((_, colIndex) => (
+                                        <TableCell key={`skeleton-${index}-${colIndex}`}>
+                                            <Skeleton className="h-4 w-full" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : table.getRowModel().rows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
