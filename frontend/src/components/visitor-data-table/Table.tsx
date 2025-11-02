@@ -1,11 +1,11 @@
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
 import type { SortingState, PaginationState } from "@tanstack/react-table";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
-import StatisticsApiService, { type Visitor } from "@/services/api/apiStatistics";
+import StatisticsApiService, { type PaginatedResponse, type Visitor } from "@/services/api/apiStatistics";
 import { useVisitorColumns } from "./columns";
 
 interface VisitorDataTableProps {
@@ -31,49 +31,53 @@ function VisitorDataTable({
         pageSize: pageSize,
     })
 
-    const [allData, setAllData] = useState<Visitor[]>([]);
-    
-    const [currentBackendPage, setCurrentBackendPage] = useState<number | undefined>(1);
-    const [fetchedPages, setFetchedPages] = useState<number[]>([]);
+    const [paginatedData, setPaginatedData] = useState<Record<number, Visitor[]>>({});
+
     const [totalPages, setTotalPages] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleRowClick = (ipAddress: string) => {
-        console.log(ipAddress)
+    const loadData = async (backendPage: number) => {
+        setIsLoading(true);
+        const pagesToPreload = preloadedPages + 1;
+        const response = await StatisticsApiService.getLatestVisitors(
+            undefined, // domain_id
+            fromDate?.toISOString().split("T")[0],
+            toDate?.toISOString().split("T")[0],
+            (backendPage / pagesToPreload) + 1,
+            pageSize * pagesToPreload,
+        );
+        setIsLoading(false);
+        return response;
     };
 
-    const loadData = useCallback(async () => {
-        setIsLoading(true);
-        if (fetchedPages.includes(currentBackendPage as number) || !currentBackendPage) {
+    useEffect(() => {
+        loadData(0).then((data: PaginatedResponse<Visitor>) => {
+            setPaginatedData({ 0: data.results });
+            setTotalPages(Math.ceil(data.count / (pageSize)));
+        });
+    }, []);
+
+    useEffect(() => {
+        const currentPage = pagination.pageIndex + 1;
+        if (paginatedData.hasOwnProperty(currentPage)) {
             return;
         }
-
-        try {
-            const response = await StatisticsApiService.getLatestVisitors(
-                undefined, // domain_id
-                fromDate?.toISOString().split("T")[0],
-                toDate?.toISOString().split("T")[0],
-                currentBackendPage,
-                pageSize * preloadedPages,
-            );
-            setFetchedPages([...fetchedPages, currentBackendPage || 1]);
-            setAllData([...allData, ...response.results]);
-            setTotalPages(response.total_pages * preloadedPages);
-            setCurrentBackendPage(response.next || undefined);
-        } finally {
-            setIsLoading(false);
+        if (totalPages !== undefined && currentPage >= totalPages) {
+            return;
         }
-    }, [currentBackendPage]);
-
-    // Fetch data when the backend page changes or when the first page is loaded
-    useEffect(() => {
-        if (currentBackendPage && (pagination.pageIndex) % preloadedPages === 0) {
-            loadData();
+        if (currentPage % (preloadedPages + 1) === 0) {
+            loadData(pagination.pageIndex + 1).then((data: PaginatedResponse<Visitor>) => {
+                setPaginatedData(prev => ({ ...prev, [currentPage]: data.results }));
+            });
         }
-    }, [pagination.pageIndex]);
+    }, [pagination.pageIndex, preloadedPages]);
+
+    const data = useMemo(() => {
+        return Object.values(paginatedData).flat();
+    }, [paginatedData]);
 
     const table = useReactTable({
-        data: allData,
+        data: data,
         columns,
         onSortingChange: setSorting,
         onPaginationChange: setPagination,
@@ -83,6 +87,7 @@ function VisitorDataTable({
             sorting,
             pagination,
         },
+        autoResetPageIndex: false,
     })
 
     return (
@@ -117,7 +122,7 @@ function VisitorDataTable({
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    onClick={() => handleRowClick(row.getValue("ip_address") as string)}
+                                    // onClick={() => handleRowClick(row.getValue("ip_address") as string)}
                                     className="cursor-pointer hover:bg-muted/50 transition-colors"
                                 >
                                     {row.getVisibleCells().map((cell) => (
@@ -138,8 +143,7 @@ function VisitorDataTable({
             <DataTablePagination
                 table={table}
                 totalPages={totalPages}
-                nextAvailable={currentBackendPage !== undefined}
-                isFetching={isLoading}
+                isPageFetching={isLoading}
             />
         </div>
     );

@@ -21,16 +21,14 @@ interface DataTablePaginationProps<TData> {
     table: Table<TData>,
     showRowsPerPage?: boolean,
     totalPages?: number,
-    nextAvailable?: boolean,
-    isFetching?: boolean,
+    isPageFetching?: boolean,
 }
 
 export function DataTablePagination<TData>({
     table,
     showRowsPerPage = false,
     totalPages,
-    nextAvailable = true,
-    isFetching = false
+    isPageFetching = false
 }: DataTablePaginationProps<TData>) {
     return (
         <div className="flex items-center justify-between space-x-6 lg:space-x-8">
@@ -60,8 +58,7 @@ export function DataTablePagination<TData>({
 
             {/* Page number */}
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {totalPages}
+                Page {table.getState().pagination.pageIndex + 1} of {totalPages}
             </div>
 
             {/* Pagination buttons */}
@@ -91,10 +88,10 @@ export function DataTablePagination<TData>({
                     size="icon"
                     className="size-8"
                     onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage() && !nextAvailable || isFetching}
+                    disabled={isPageFetching || totalPages !== undefined && table.getState().pagination.pageIndex >= totalPages - 1}
                 >
                     <span className="sr-only">Go to next page</span>
-                    {isFetching ? <Loader2 className="animate-spin" /> : <ChevronRight />}
+                    {isPageFetching ? <Loader2 className="animate-spin" /> : <ChevronRight />}
                 </Button>
                 <Button
                     variant="outline"
