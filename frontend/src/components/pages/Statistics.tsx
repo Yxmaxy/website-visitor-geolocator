@@ -17,7 +17,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { AreaStatistics, Visitor, UserAgentDistribution } from "@/services/api/apiStatistics";
+import type { AreaStatistics, Visitor, UserAgentDistribution, PaginatedResponse } from "@/services/api/apiStatistics";
 import StatisticsApiService, { LevelChoices } from "@/services/api/apiStatistics";
 import { DomainApiService } from "@/services/api/apiDomain";
 import type { Domain } from "@/services/api/apiDomain";
@@ -33,19 +33,30 @@ import {
     Monitor,
 } from "lucide-react";
 
-import { VisitorDataTable } from "@/components/visitor-data-table/Table";
+import VisitorDataTable from "@/components/visitor-data-table/Table";
+import { Input } from "../ui/input";
 
 // Statistics Header Component
 interface StatisticsHeaderProps {
-    selectedDomain: Domain | null;
+    selectedDomain?: Domain;
     domains: Domain[];
-    onDomainChange: (domain: Domain | null) => void;
-    lastDays: number;
-    onLastDaysChange: (days: number) => void;
+    onDomainChange: (domain?: Domain) => void;
+    fromDate: string;
+    toDate: string;
+    onFromDateChange: (fromDate: string) => void;
+    onToDateChange: (toDate: string) => void;
 }
 
-function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, onLastDaysChange }: StatisticsHeaderProps) {
-    const validDays = [1, 7, 14, 30, 60, 90, 180, 365];
+function StatisticsHeader({
+    selectedDomain,
+    domains,
+    onDomainChange,
+    fromDate,
+    toDate,
+    onFromDateChange,
+    onToDateChange,
+}: StatisticsHeaderProps) {
+    const [showCustomDateRange, setShowCustomDateRange] = useState(false);
 
     return (
         <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6 min-h-12">
@@ -60,10 +71,10 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
                         value={selectedDomain?.id?.toString() || "all"}
                         onValueChange={(value) => {
                             if (value === "all") {
-                                onDomainChange(null);
+                                onDomainChange(undefined);
                             } else {
                                 const domain = domains.find(d => d.id.toString() === value);
-                                onDomainChange(domain || null);
+                                onDomainChange(domain || undefined);
                             }
                         }}
                     >
@@ -83,20 +94,59 @@ function StatisticsHeader({ selectedDomain, domains, onDomainChange, lastDays, o
 
                 <div className="flex items-center gap-2">
                     <Select
-                        value={lastDays.toString()}
-                        onValueChange={(value) => onLastDaysChange(parseInt(value))}
+                        onValueChange={(value: number|string) => {
+                            if (value === "custom") {
+                                setShowCustomDateRange(true);
+                            } else {
+                                setShowCustomDateRange(false);
+                                const today = new Date();
+                                const fromDate = new Date(today);
+                                fromDate.setDate(fromDate.getDate() - parseInt(value.toString()));
+                                onFromDateChange(fromDate.toISOString().split("T")[0] || "");
+                                const toDate = new Date(today);
+                                toDate.setDate(toDate.getDate() + 1);
+                                onToDateChange(toDate.toISOString().split("T")[0] || "");
+                                setShowCustomDateRange(false);
+                            }
+                        }}
                     >
                         <SelectTrigger className="w-38">
                             <SelectValue placeholder="Last days" />
                         </SelectTrigger>
                         <SelectContent>
-                            {validDays.map((day) => (
-                                <SelectItem key={day} value={day.toString()}>
-                                    {day === 1 ? 'Last day' : `Last ${day} days`}
-                                </SelectItem>
-                            ))}
+                            <SelectItem value="7">
+                                Last 7 days
+                            </SelectItem>
+                            <SelectItem value="14">
+                                Last 14 days
+                            </SelectItem>
+                            <SelectItem value="30">
+                                Last 30 days
+                            </SelectItem>
+                            <SelectItem value="90">
+                                Last 90 days
+                            </SelectItem>
+                            <SelectItem value="365">
+                                Last 365 days
+                            </SelectItem>
+                            <SelectItem value="custom">
+                                Custom
+                            </SelectItem>
                         </SelectContent>
                     </Select>
+                    {showCustomDateRange && (
+                        <div className="flex items-center gap-2">
+                            <Input type="date"
+                                value={fromDate}
+                                onChange={(e) => onFromDateChange(e.target.value)}
+                            />
+                            <Input type="date"
+                                value={toDate}
+                                onChange={(e) => onToDateChange(e.target.value)}
+                                max={new Date().toISOString().split("T")[0]}
+                            />
+                        </div>
+                    )}
                 </div>
 
             </div>
@@ -392,11 +442,12 @@ function AreaStatisticsTable({ statistics, title, description, showFlag = false,
 
 // Latest Visitors Chart Component
 interface LatestVisitorsChartProps {
-    visitors: Visitor[];
-    lastDays: number;
+    selectedDomain?: number;
+    fromDate: string;
+    toDate: string;
 }
 
-const LatestVisitorsChart = memo(({ visitors, lastDays }: LatestVisitorsChartProps) => {
+const LatestVisitorsChart = memo(({ selectedDomain, fromDate, toDate }: LatestVisitorsChartProps) => {
     const chartData = useMemo(() => {
         if (lastDays === 1) return [];
 
@@ -808,14 +859,15 @@ function UserAgentTableSkeleton({ title, description, icon }: { title: string; d
 function Statistics() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [domains, setDomains] = useState<Domain[]>([]);
-    const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
-    const [lastDays, setLastDays] = useState<number>(30);
+    const [selectedDomain, setSelectedDomain] = useState<Domain | undefined>(undefined);
+    const [fromDate, setFromDate] = useState<string>("");
+    const [toDate, setToDate] = useState<string>("");
 
     // Data states
     const [loading, setLoading] = useState<boolean>(false);
     const [countryStatistics, setCountryStatistics] = useState<AreaStatistics[]>([]);
     const [continentStatistics, setContinentStatistics] = useState<AreaStatistics[]>([]);
-    const [visitors, setVisitors] = useState<Visitor[]>([]);
+    const [visitors, setVisitors] = useState<PaginatedResponse<Visitor> | null>(null);
     const [userAgentDistribution, setUserAgentDistribution] = useState<UserAgentDistribution[]>([]);
 
     // Geometries
@@ -824,9 +876,18 @@ function Statistics() {
 
     // Load static data on mount (geometries and domains)
     useEffect(() => {
-        StatisticsApiService.getAreaGeometries(LevelChoices.CONTINENT).then(setContinentGeometries).catch(() => toast.error("Failed to load continent geometries"));
-        StatisticsApiService.getAreaGeometries(LevelChoices.COUNTRY).then(setCountryGeometries).catch(() => toast.error("Failed to load country geometries"));
-        DomainApiService.getDomains().then(setDomains).catch(() => toast.error("Failed to load domains"));
+        StatisticsApiService
+            .getAreaGeometries(LevelChoices.CONTINENT)
+            .then(setContinentGeometries)
+            .catch(() => toast.error("Failed to load continent geometries"));
+        StatisticsApiService
+            .getAreaGeometries(LevelChoices.COUNTRY)
+            .then(setCountryGeometries)
+            .catch(() => toast.error("Failed to load country geometries"));
+        DomainApiService
+            .getDomains()
+            .then(setDomains)
+            .catch(() => toast.error("Failed to load domains"));
     }, []);
 
     // Handle initial URL parameter and set selected domain
@@ -840,7 +901,7 @@ function Statistics() {
         }
     }, [searchParams, domains]);
 
-    // Load statistics data when domain or lastDays changes
+    // Load statistics data when domain or fromDate or toDate changes
     useEffect(() => {
         // Skip if domains haven't loaded yet
         if (domains.length === 0) return;
@@ -848,7 +909,7 @@ function Statistics() {
         const loadStatisticsData = async () => {
             setLoading(true);
             try {
-                const domainId = selectedDomain?.id || null;
+                const domainId = selectedDomain?.id || undefined;
                 
                 // Update URL params (but don't trigger a re-render)
                 if (selectedDomain) {
@@ -859,10 +920,10 @@ function Statistics() {
 
                 // Load all statistics data
                 const [countryStats, continentStats, visitorsData, userAgentData] = await Promise.all([
-                    StatisticsApiService.getAreaStatistics(domainId, LevelChoices.COUNTRY, lastDays),
-                    StatisticsApiService.getAreaStatistics(domainId, LevelChoices.CONTINENT, lastDays),
-                    StatisticsApiService.getLatestVisitors(domainId, lastDays),
-                    StatisticsApiService.getUserAgentDistribution(domainId, lastDays)
+                    StatisticsApiService.getAreaStatistics(domainId, fromDate, toDate, LevelChoices.COUNTRY),
+                    StatisticsApiService.getAreaStatistics(domainId, fromDate, toDate, LevelChoices.CONTINENT),
+                    StatisticsApiService.getLatestVisitors(domainId, fromDate, toDate),
+                    StatisticsApiService.getUserAgentDistribution(domainId, fromDate, toDate)
                 ]);
 
                 setCountryStatistics(countryStats);
@@ -877,7 +938,7 @@ function Statistics() {
         };
 
         loadStatisticsData();
-    }, [selectedDomain?.id, lastDays, domains.length]);
+    }, [selectedDomain?.id, fromDate, toDate, domains.length]);
 
     return (
         <div>
@@ -885,8 +946,10 @@ function Statistics() {
                 selectedDomain={selectedDomain}
                 domains={domains}
                 onDomainChange={setSelectedDomain}
-                lastDays={lastDays}
-                onLastDaysChange={setLastDays}
+                fromDate={fromDate}
+                toDate={toDate}
+                onFromDateChange={setFromDate}
+                onToDateChange={setToDate}
             />
 
             <div className="space-y-6 mt-6">
@@ -906,14 +969,17 @@ function Statistics() {
                         </CardHeader>
                         <CardContent>
                             <LatestVisitorsChart
-                                key={`visitors-${selectedDomain?.id || 'all'}-${lastDays}`}
+                                key={`visitors-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                                 visitors={visitors}
-                                lastDays={lastDays}
+                                fromDate={fromDate}
+                                toDate={toDate}
                             />
                             <VisitorDataTable
-                                key={`visitors-table-${selectedDomain?.id || 'all'}-${lastDays}`}
-                                visitors={visitors}
+                                key={`visitors-table-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
+                                fromDate={fromDate}
+                                toDate={toDate}
                                 pageSize={5}
+                                preloadedPages={2}
                             />
                         </CardContent>
                     </Card>
@@ -929,7 +995,7 @@ function Statistics() {
                         />
                     ) : (
                         <MapStatisticsCard
-                            key={`continent-map-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`continent-map-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             statistics={continentStatistics}
                             geometries={continentGeometries}
                             icon={<Globe className="h-5 w-5" />}
@@ -945,7 +1011,7 @@ function Statistics() {
                         />
                     ) : (
                         <AreaStatisticsTable
-                            key={`continent-table-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`continent-table-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             statistics={continentStatistics}
                             title="Continents"
                             description="Visitor statistics by continent"
@@ -965,7 +1031,7 @@ function Statistics() {
                         />
                     ) : (
                         <MapStatisticsCard
-                            key={`country-map-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`country-map-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             statistics={countryStatistics}
                             geometries={countryGeometries}
                             upperRegions={UPPER_REGIONS}
@@ -982,7 +1048,7 @@ function Statistics() {
                         />
                     ) : (
                         <AreaStatisticsTable
-                            key={`country-table-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`country-table-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             statistics={countryStatistics}
                             title="Countries"
                             description="Visitor statistics by country"
@@ -1001,7 +1067,7 @@ function Statistics() {
                         />
                     ) : (
                         <UserAgentPieChart
-                            key={`user-agent-chart-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`user-agent-chart-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             userAgentDistribution={userAgentDistribution}
                             title="Browser Distribution"
                             description="Distribution of visitors by browser"
@@ -1016,7 +1082,7 @@ function Statistics() {
                         />
                     ) : (
                         <UserAgentTable
-                            key={`user-agent-table-${selectedDomain?.id || 'all'}-${lastDays}`}
+                            key={`user-agent-table-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
                             userAgentDistribution={userAgentDistribution}
                             title="Browsers"
                             description="Visitor statistics by browser"

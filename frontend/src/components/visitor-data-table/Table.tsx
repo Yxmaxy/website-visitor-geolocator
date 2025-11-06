@@ -10,8 +10,8 @@ import StatisticsApiService, { type PaginatedResponse, type Visitor } from "@/se
 import { useVisitorColumns } from "./columns";
 
 interface VisitorDataTableProps {
-    fromDate?: Date;
-    toDate?: Date;
+    fromDate?: string;
+    toDate?: string;
     pageSize: number;
     preloadedPages: number;
     hideColumns?: string[];
@@ -56,8 +56,8 @@ function VisitorDataTable({
         const pagesToPreload = preloadedPages + 1;
         const response = await StatisticsApiService.getLatestVisitors(
             undefined, // domain_id
-            fromDate?.toISOString().split("T")[0],
-            toDate?.toISOString().split("T")[0],
+            fromDate,
+            toDate,
             (backendPage / pagesToPreload) + 1,
             pageSize * pagesToPreload,
             ordering ?? undefined,

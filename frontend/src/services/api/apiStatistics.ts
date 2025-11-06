@@ -75,8 +75,13 @@ class StatisticsApiService {
         return geometries;
     }
 
-    static async getAreaStatistics(domain_id?: number, level: LevelChoices = LevelChoices.COUNTRY, days: number = 30): Promise<AreaStatistics[]> {
-        const queryString = this.buildQueryString({ domain_id, level, days });
+    static async getAreaStatistics(
+        domain_id?: number,
+        from_date?: string,
+        to_date?: string,
+        level: LevelChoices = LevelChoices.COUNTRY,
+    ): Promise<AreaStatistics[]> {
+        const queryString = this.buildQueryString({ domain_id, from_date, to_date,level });
         return ApiService.get<AreaStatistics[]>(`/statistics/area/?${queryString}`);
     }
 
@@ -92,8 +97,12 @@ class StatisticsApiService {
         return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 
-    static async getUserAgentDistribution(domain_id?: number, days: number = 30): Promise<UserAgentDistribution[]> {
-        const queryString = this.buildQueryString({ domain_id, days });
+    static async getUserAgentDistribution(
+        domain_id?: number,
+        from_date?: string,
+        to_date?: string,
+    ): Promise<UserAgentDistribution[]> {
+        const queryString = this.buildQueryString({ domain_id, from_date, to_date });
         return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
     }
 }
