@@ -15,6 +15,11 @@ urlpatterns = [
         name="visitor_list_api",
     ),
     path(
+        "visitor/count/",
+        views.VisitorCountAPIView.as_view(),
+        name="visitor_count_api",
+    ),
+    path(
         "user-agents/",
         views.UserAgentDistributionAPIView.as_view(),
         name="user_agent_distribution_api",

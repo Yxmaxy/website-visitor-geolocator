@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.utils import timezone
 from django.db.models import Count, Subquery, OuterRef
+from django.db.models.functions import TruncDate
 
 from visitor_geolocator.core.models import Visitor, Domain
 from visitor_geolocator.statistics.models import Area, LevelChoices
@@ -93,3 +94,24 @@ class StatisticsService:
         ]
 
         return sorted(distribution, key=lambda x: x["count"], reverse=True)
+
+    @staticmethod
+    def get_visitors_by_date(domains: list[Domain], from_date: datetime = None, to_date: datetime = None):
+        """
+        Get visitor count grouped by date
+        Returns list of dicts with 'date' and 'count' keys, only for dates that have data
+        """
+        visitors = StatisticsService.get_visitors(domains, from_date, to_date)
+
+        date_stats = (
+            visitors.annotate(date=TruncDate("created_at"))
+            .values("date")
+            .annotate(count=Count("id"))
+            .order_by("date")
+        )
+
+        return [
+            {"date": str(stat["date"]), "count": stat["count"]}
+            for stat in date_stats
+            if stat["date"] is not None
+        ]

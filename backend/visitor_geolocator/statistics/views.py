@@ -16,6 +16,7 @@ from visitor_geolocator.statistics.serializers import (
     StatisticsSerializer,
     UserAgentDistributionSerializer,
     VisitorSerializer,
+    VisitorCountByDateSerializer,
 )
 from visitor_geolocator.core.services import DomainService, UserService
 from visitor_geolocator.frontend.permissions import (
@@ -116,6 +117,33 @@ class VisitorListAPIView(ListAPIView):
 
         domains = domains.order_by("id")
         return StatisticsService.get_visitors(domains, from_date, to_date)
+
+
+class VisitorCountAPIView(APIView):
+    """API view for visitor count by date"""
+
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
+
+    def get(self, request: Request):
+        """Get visitor count grouped by date"""
+        serializer = StatisticsSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        domain_id = serializer.validated_data.get("domain_id")
+        from_date = serializer.validated_data.get("from_date")
+        to_date = serializer.validated_data.get("to_date")
+
+        wvg_user = UserService.get_wvg_user(request.user)
+        domains = DomainService.get_owner_domains(wvg_user)
+        if domain_id:
+            domains = domains.filter(id=domain_id)
+
+        data = StatisticsService.get_visitors_by_date(domains, from_date, to_date)
+
+        response_serializer = VisitorCountByDateSerializer(data=data, many=True)
+        response_serializer.is_valid(raise_exception=True)
+
+        return Response(response_serializer.validated_data)
 
 
 class UserAgentDistributionAPIView(APIView):

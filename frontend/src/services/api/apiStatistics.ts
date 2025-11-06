@@ -36,6 +36,11 @@ export interface UserAgentDistribution {
     count: number;
 }
 
+export interface VisitorCountByDate {
+    date: string;
+    count: number;
+}
+
 class StatisticsApiService {
     private static geometryPromises: Record<string, Promise<FeatureCollection>> = {};
 
@@ -104,6 +109,15 @@ class StatisticsApiService {
     ): Promise<UserAgentDistribution[]> {
         const queryString = this.buildQueryString({ domain_id, from_date, to_date });
         return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
+    }
+
+    static async getVisitorCountByDate(
+        domain_id?: number,
+        from_date?: string,
+        to_date?: string,
+    ): Promise<VisitorCountByDate[]> {
+        const queryString = this.buildQueryString({ domain_id, from_date, to_date });
+        return ApiService.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
     }
 }
 

@@ -66,3 +66,10 @@ class UserAgentDistributionSerializer(serializers.Serializer):
 
     browser = serializers.CharField()
     count = serializers.IntegerField()
+
+
+class VisitorCountByDateSerializer(serializers.Serializer):
+    """Serializer for visitor count by date response"""
+
+    date = serializers.CharField()
+    count = serializers.IntegerField()

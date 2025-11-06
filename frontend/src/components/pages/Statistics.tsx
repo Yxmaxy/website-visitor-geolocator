@@ -17,7 +17,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import type { AreaStatistics, Visitor, UserAgentDistribution, PaginatedResponse } from "@/services/api/apiStatistics";
+import type { AreaStatistics, UserAgentDistribution, VisitorCountByDate } from "@/services/api/apiStatistics";
 import StatisticsApiService, { LevelChoices } from "@/services/api/apiStatistics";
 import { DomainApiService } from "@/services/api/apiDomain";
 import type { Domain } from "@/services/api/apiDomain";
@@ -448,27 +448,54 @@ interface LatestVisitorsChartProps {
 }
 
 const LatestVisitorsChart = memo(({ selectedDomain, fromDate, toDate }: LatestVisitorsChartProps) => {
-    const chartData = useMemo(() => {
-        if (lastDays === 1) return [];
+    const [visitorCountByDate, setVisitorCountByDate] = useState<VisitorCountByDate[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
-        // Generate array of dates for the last N days
+    useEffect(() => {
+        if (!fromDate || !toDate) return;
+
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const data = await StatisticsApiService.getVisitorCountByDate(
+                    selectedDomain,
+                    fromDate,
+                    toDate
+                );
+                setVisitorCountByDate(data);
+            } catch (error) {
+                toast.error("Failed to load visitor count data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, [selectedDomain, fromDate, toDate]);
+
+    const chartData = useMemo(() => {
+        if (!fromDate || !toDate) return [];
+
+        // Generate array of dates from fromDate to toDate
         const dates: string[] = [];
-        const today = new Date();
-        for (let i = lastDays - 1; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            dates.push(date.toISOString().split("T")[0] || ""); // YYYY-MM-DD format
+        const startDate = new Date(fromDate);
+        const endDate = new Date(toDate);
+        
+        // Ensure we're working with dates at midnight to avoid timezone issues
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+
+        const currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            dates.push(currentDate.toISOString().split("T")[0] || "");
+            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Group visitors by date
-        const groupedVisitors = visitors.reduce((acc, visitor) => {
-            const dateParts = new Date(visitor.created_at).toISOString().split("T");
-            const date = dateParts[0]; // YYYY-MM-DD format
-            if (date && date.length > 0) {
-                acc[date] = (acc[date] || 0) + 1;
-            }
-            return acc;
-        }, {} as Record<string, number>);
+        // Create a map from the API data
+        const countMap = new Map<string, number>();
+        visitorCountByDate.forEach((item) => {
+            countMap.set(item.date, item.count);
+        });
 
         // Create chart data with all dates in range, including zero counts
         return dates.map((date: string) => ({
@@ -476,11 +503,11 @@ const LatestVisitorsChart = memo(({ selectedDomain, fromDate, toDate }: LatestVi
                 month: "short", 
                 day: "numeric" 
             }),
-            count: groupedVisitors[date] || 0
+            count: countMap.get(date) || 0
         }));
-    }, [visitors, lastDays]);
+    }, [visitorCountByDate, fromDate, toDate]);
 
-    if (lastDays === 1 || chartData.length === 0) {
+    if (loading || !fromDate || !toDate || chartData.length === 0) {
         return <></>;
     }
 
@@ -867,7 +894,6 @@ function Statistics() {
     const [loading, setLoading] = useState<boolean>(false);
     const [countryStatistics, setCountryStatistics] = useState<AreaStatistics[]>([]);
     const [continentStatistics, setContinentStatistics] = useState<AreaStatistics[]>([]);
-    const [visitors, setVisitors] = useState<PaginatedResponse<Visitor> | null>(null);
     const [userAgentDistribution, setUserAgentDistribution] = useState<UserAgentDistribution[]>([]);
 
     // Geometries
@@ -919,16 +945,14 @@ function Statistics() {
                 }
 
                 // Load all statistics data
-                const [countryStats, continentStats, visitorsData, userAgentData] = await Promise.all([
+                const [countryStats, continentStats, userAgentData] = await Promise.all([
                     StatisticsApiService.getAreaStatistics(domainId, fromDate, toDate, LevelChoices.COUNTRY),
                     StatisticsApiService.getAreaStatistics(domainId, fromDate, toDate, LevelChoices.CONTINENT),
-                    StatisticsApiService.getLatestVisitors(domainId, fromDate, toDate),
                     StatisticsApiService.getUserAgentDistribution(domainId, fromDate, toDate)
                 ]);
 
                 setCountryStatistics(countryStats);
                 setContinentStatistics(continentStats);
-                setVisitors(visitorsData);
                 setUserAgentDistribution(userAgentData);
             } catch (error) {
                 toast.error("Failed to load statistics data");
@@ -970,7 +994,7 @@ function Statistics() {
                         <CardContent>
                             <LatestVisitorsChart
                                 key={`visitors-${selectedDomain?.id || 'all'}-${fromDate}-${toDate}`}
-                                visitors={visitors}
+                                selectedDomain={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
                             />
