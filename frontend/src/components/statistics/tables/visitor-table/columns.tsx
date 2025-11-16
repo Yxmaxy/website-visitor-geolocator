@@ -60,7 +60,7 @@ const allColumns: ColumnDef<Visitor>[] = [
 ]
 
 const useVisitorColumns = (hideColumns?: string[]) => {
-    return useMemo(() => {
+    return useMemo<ColumnDef<Visitor>[]>(() => {
         return allColumns.filter((column) => {
             const columnId = (column as any).accessorKey || column.id;
             return !hideColumns?.includes(columnId);

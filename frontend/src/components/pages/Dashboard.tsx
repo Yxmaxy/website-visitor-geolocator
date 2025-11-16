@@ -2,7 +2,7 @@ import { BarChart3, Globe, Settings, Gauge } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import VisitorDataTable from "@/components/visitor-data-table/Table";
+import VisitorTable from "@/components/statistics/tables/visitor-table/VisitorTable";
 import NavigationCard from "@/components/NavigationCard";
 
 
@@ -41,7 +41,7 @@ function Dashboard() {
                 {/* Latest Visitors Table */}
                 <Card>
                     <CardContent>
-                        <VisitorDataTable
+                        <VisitorTable
                             pageSize={3}
                             preloadedPages={2}
                         />

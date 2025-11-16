@@ -3,10 +3,23 @@ import { ApiService } from "@/services/api/api";
 import CacheService from "@/services/cache";
 import type { FeatureCollection } from "geojson";
 
+
 export enum LevelChoices {
     COUNTRY = 1,
     CONTINENT = 0,
 }
+
+export interface StatisticsParameters {
+    domainId?: number,
+    fromDate?: string,
+    toDate?: string,
+};
+
+export interface PaginatedStatisticsParameters extends StatisticsParameters {
+    page?: number,
+    pageSize?: number,
+    ordering?: string,
+};
 
 export interface PaginatedResponse<T> {
     count: number;
@@ -16,6 +29,7 @@ export interface PaginatedResponse<T> {
     total_pages: number;
 }
 
+// data models
 export interface AreaStatistics {
     area_name: string;
     visitor_count: number;
@@ -41,15 +55,19 @@ export interface VisitorCountByDate {
     count: number;
 }
 
+
 class StatisticsApiService {
     private static geometryPromises: Record<string, Promise<FeatureCollection>> = {};
 
     static buildQueryString(params: Record<string, any>): string {
         // helper function to build query string from params
+        // removes undefined and null values
+        // converts keys from camelCase to snake_case
         const searchParams = new URLSearchParams();
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null && typeof value !== "undefined") {
-                searchParams.append(key, value?.toString() ?? "");
+                const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+                searchParams.append(snakeKey, value?.toString() ?? "");
             }
         }
         return searchParams.toString();
@@ -80,43 +98,23 @@ class StatisticsApiService {
         return geometries;
     }
 
-    static async getAreaStatistics(
-        domain_id?: number,
-        from_date?: string,
-        to_date?: string,
-        level: LevelChoices = LevelChoices.COUNTRY,
-    ): Promise<AreaStatistics[]> {
-        const queryString = this.buildQueryString({ domain_id, from_date, to_date,level });
+    static async getAreaStatistics(options: StatisticsParameters): Promise<AreaStatistics[]> {
+        const queryString = this.buildQueryString(options);
         return ApiService.get<AreaStatistics[]>(`/statistics/area/?${queryString}`);
-    }
+    };
 
-    static async getLatestVisitors(
-        domain_id?: number,
-        from_date?: string,
-        to_date?: string,
-        page?: number,
-        page_size?: number,
-        ordering?: string,
-    ): Promise<PaginatedResponse<Visitor>> {
-        const queryString = this.buildQueryString({ domain_id, from_date, to_date, page, page_size, ordering });
+    static async getLatestVisitors(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<Visitor>> {
+        const queryString = this.buildQueryString(options);
         return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 
-    static async getUserAgentDistribution(
-        domain_id?: number,
-        from_date?: string,
-        to_date?: string,
-    ): Promise<UserAgentDistribution[]> {
-        const queryString = this.buildQueryString({ domain_id, from_date, to_date });
+    static async getUserAgentDistribution(options: StatisticsParameters): Promise<UserAgentDistribution[]> {
+        const queryString = this.buildQueryString(options);
         return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
     }
 
-    static async getVisitorCountByDate(
-        domain_id?: number,
-        from_date?: string,
-        to_date?: string,
-    ): Promise<VisitorCountByDate[]> {
-        const queryString = this.buildQueryString({ domain_id, from_date, to_date });
+    static async getVisitorCountByDate(options: StatisticsParameters): Promise<VisitorCountByDate[]> {
+        const queryString = this.buildQueryString(options);
         return ApiService.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
     }
 }

@@ -1,38 +1,41 @@
-import { useState, useEffect, memo, useMemo, useRef } from "react";
+import React, { useState, useEffect, memo, useMemo, useRef } from "react";
 import { flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
-import type { SortingState, PaginationState } from "@tanstack/react-table";
+import type { ColumnDef, SortingState, PaginationState } from "@tanstack/react-table";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+
 import { Skeleton } from "@/components/ui/skeleton";
 
-import StatisticsApiService, { type PaginatedResponse, type Visitor } from "@/services/api/apiStatistics";
-import { useVisitorColumns } from "./columns";
+import type { PaginatedResponse, PaginatedStatisticsParameters } from "@/services/api/apiStatistics";
 
-interface VisitorDataTableProps {
-    fromDate?: string;
-    toDate?: string;
-    pageSize: number;
+
+export interface StatisticsTableProps extends PaginatedStatisticsParameters {
     preloadedPages: number;
-    hideColumns?: string[];
 }
 
-// Latest Visitors Data Table Component
-function VisitorDataTable({
+interface TableProps<T> extends StatisticsTableProps {
+    columns: ColumnDef<T>[];
+    dataRetriever: (options: PaginatedStatisticsParameters) => Promise<PaginatedResponse<T>>;
+}
+
+function StatiststicsTable<T>({
+    columns,
+
+    dataRetriever,
+    domainId = undefined,
     fromDate = undefined,
     toDate = undefined,
     pageSize = 5,
     preloadedPages = 1,
-    hideColumns = []
-}: VisitorDataTableProps) {
-    const columns = useVisitorColumns(hideColumns);
+}: TableProps<T>) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: pageSize,
     })
 
-    const [paginatedData, setPaginatedData] = useState<Record<number, Visitor[]>>({});
+    const [paginatedData, setPaginatedData] = useState<Record<number, T[]>>({});
 
     const [totalPages, setTotalPages] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
@@ -54,21 +57,21 @@ function VisitorDataTable({
     const loadData = async (backendPage: number) => {
         setIsLoading(true);
         const pagesToPreload = preloadedPages + 1;
-        const response = await StatisticsApiService.getLatestVisitors(
-            undefined, // domain_id
+        const response = await dataRetriever({
+            domainId,
             fromDate,
             toDate,
-            (backendPage / pagesToPreload) + 1,
-            pageSize * pagesToPreload,
-            ordering ?? undefined,
-        );
+            page: (backendPage / pagesToPreload) + 1,
+            pageSize: pageSize * pagesToPreload,
+            ordering: ordering ?? undefined,
+        });
         setIsLoading(false);
         return response;
     };
 
     // Initial load on mount
     useEffect(() => {
-        loadData(0).then((data: PaginatedResponse<Visitor>) => {
+        loadData(0).then((data: PaginatedResponse<T>) => {
             setPaginatedData({ 0: data.results });
             setTotalPages(Math.ceil(data.count / (pageSize)));
         });
@@ -82,7 +85,7 @@ function VisitorDataTable({
         }
         setPaginatedData({});
         setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-        loadData(0).then((data: PaginatedResponse<Visitor>) => {
+        loadData(0).then((data: PaginatedResponse<T>) => {
             setPaginatedData({ 0: data.results });
             setTotalPages(Math.ceil(data.count / (pageSize)));
         });
@@ -98,7 +101,7 @@ function VisitorDataTable({
             return;
         }
         if (currentPage % (preloadedPages + 1) === 0) {
-            loadData(pagination.pageIndex + 1).then((data: PaginatedResponse<Visitor>) => {
+            loadData(pagination.pageIndex + 1).then((data: PaginatedResponse<T>) => {
                 setPaginatedData(prev => ({ ...prev, [currentPage]: data.results }));
             });
         }
@@ -199,4 +202,4 @@ function VisitorDataTable({
     );
 }
 
-export default memo(VisitorDataTable);
+export default memo(StatiststicsTable) as <T>(props: TableProps<T>) => React.ReactElement;
