@@ -157,7 +157,7 @@ function StatiststicsTable<T>({
                             // Skeleton loader when fetching and no data
                             Array.from({ length: pageSize }).map((_, index) => (
                                 <TableRow key={`skeleton-${index}`}>
-                                    {columns.map((_, colIndex) => (
+                                    {table.getHeaderGroups().map((_, colIndex) => (
                                         <TableCell key={`skeleton-${index}-${colIndex}`}>
                                             <Skeleton className="h-4 w-full" />
                                         </TableCell>
@@ -166,7 +166,7 @@ function StatiststicsTable<T>({
                             ))
                         ) : table.getRowModel().rows.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
                                     No results.
                                 </TableCell>
                             </TableRow>

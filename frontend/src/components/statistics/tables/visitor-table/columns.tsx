@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -7,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import type { Visitor } from "@/services/api/apiStatistics";
 
 
-const allColumns: ColumnDef<Visitor>[] = [
+export const columns: ColumnDef<Visitor>[] = [
     {
         accessorKey: "ip_address",
         header: ({ column }) => (
@@ -58,14 +57,3 @@ const allColumns: ColumnDef<Visitor>[] = [
         },
     },
 ]
-
-const useVisitorColumns = (hideColumns?: string[]) => {
-    return useMemo<ColumnDef<Visitor>[]>(() => {
-        return allColumns.filter((column) => {
-            const columnId = (column as any).accessorKey || column.id;
-            return !hideColumns?.includes(columnId);
-        });
-    }, [hideColumns])
-}
-
-export { useVisitorColumns };

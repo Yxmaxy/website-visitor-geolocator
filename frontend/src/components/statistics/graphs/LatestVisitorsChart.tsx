@@ -10,7 +10,7 @@ import StatisticsApiService, { type StatisticsParameters, type VisitorCountByDat
 
 
 export default function LatestVisitorsChart({ domainId, fromDate, toDate }: StatisticsParameters) {
-    const [visitorCountByDate, setVisitorCountByDate] = useState<VisitorCountByDate[]>([]);
+    const [apiData, setApiData] = useState<VisitorCountByDate[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
@@ -22,7 +22,7 @@ export default function LatestVisitorsChart({ domainId, fromDate, toDate }: Stat
                 const data = await StatisticsApiService.getVisitorCountByDate(
                     { domainId, fromDate, toDate }
                 );
-                setVisitorCountByDate(data);
+                setApiData(data);
             } catch (error) {
                 toast.error("Failed to load visitor count data");
             } finally {
@@ -53,7 +53,7 @@ export default function LatestVisitorsChart({ domainId, fromDate, toDate }: Stat
 
         // Create a map from the API data
         const countMap = new Map<string, number>();
-        visitorCountByDate.forEach((item) => {
+        apiData.forEach((item) => {
             countMap.set(item.date, item.count);
         });
 
@@ -65,7 +65,7 @@ export default function LatestVisitorsChart({ domainId, fromDate, toDate }: Stat
             }),
             count: countMap.get(date) || 0
         }));
-    }, [visitorCountByDate, fromDate, toDate]);
+    }, [apiData, fromDate, toDate]);
 
     if (loading || !fromDate || !toDate || chartData.length === 0) {
         return <LatestVisitorsChartSkeleton />;

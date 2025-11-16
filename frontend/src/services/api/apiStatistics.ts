@@ -13,6 +13,7 @@ export interface StatisticsParameters {
     domainId?: number,
     fromDate?: string,
     toDate?: string,
+    level?: LevelChoices,
 };
 
 export interface PaginatedStatisticsParameters extends StatisticsParameters {
@@ -87,7 +88,7 @@ class StatisticsApiService {
         if (this.geometryPromises[cacheKey]) {
             return await this.geometryPromises[cacheKey];
         } else {
-            const queryString = this.buildQueryString({ level });
+            const queryString = StatisticsApiService.buildQueryString({ level });
             this.geometryPromises[cacheKey] = ApiService.get(`/statistics/geometries/?${queryString}`);
         }
 
@@ -98,23 +99,23 @@ class StatisticsApiService {
         return geometries;
     }
 
-    static async getAreaStatistics(options: StatisticsParameters): Promise<AreaStatistics[]> {
-        const queryString = this.buildQueryString(options);
-        return ApiService.get<AreaStatistics[]>(`/statistics/area/?${queryString}`);
+    static async getAreaStatistics(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<AreaStatistics>> {
+        const queryString = StatisticsApiService.buildQueryString(options);
+        return ApiService.get<PaginatedResponse<AreaStatistics>>(`/statistics/area/?${queryString}`);
     };
 
     static async getLatestVisitors(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<Visitor>> {
-        const queryString = this.buildQueryString(options);
+        const queryString = StatisticsApiService.buildQueryString(options);
         return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 
-    static async getUserAgentDistribution(options: StatisticsParameters): Promise<UserAgentDistribution[]> {
-        const queryString = this.buildQueryString(options);
-        return ApiService.get<UserAgentDistribution[]>(`/statistics/user-agents/?${queryString}`);
+    static async getUserAgentDistribution(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<UserAgentDistribution>> {
+        const queryString = StatisticsApiService.buildQueryString(options);
+        return ApiService.get<PaginatedResponse<UserAgentDistribution>>(`/statistics/user-agents/?${queryString}`);
     }
 
     static async getVisitorCountByDate(options: StatisticsParameters): Promise<VisitorCountByDate[]> {
-        const queryString = this.buildQueryString(options);
+        const queryString = StatisticsApiService.buildQueryString(options);
         return ApiService.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
     }
 }
