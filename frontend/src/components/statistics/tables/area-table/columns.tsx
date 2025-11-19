@@ -17,7 +17,7 @@ export const columns: ColumnDef<AreaStatistics>[] = [
             const countryFlag = getCountryFlag(areaName);
             return (
                 <div className="flex items-center gap-2">
-                    <span className="text-lg">{countryFlag}</span>
+                    <span className="text-lg leading-0.5">{countryFlag}</span>
                     <span className="font-medium truncate">{areaName}</span>
                 </div>
             );

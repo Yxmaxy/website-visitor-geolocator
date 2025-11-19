@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile"
 
 import type { PaginatedResponse, PaginatedStatisticsParameters } from "@/services/api/apiStatistics";
 
@@ -29,6 +30,8 @@ function StatiststicsTable<T>({
     pageSize = 5,
     preloadedPages = 1,
 }: TableProps<T>) {
+    const isMobile = useIsMobile();
+
     const [sorting, setSorting] = useState<SortingState>([])
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
@@ -126,10 +129,11 @@ function StatiststicsTable<T>({
         autoResetPageIndex: false,
     })
 
+    const rowHeight = isMobile ? 36 : 51;
+
     return (
         <div className="space-y-4">
-            
-            <div className="rounded-md border">
+            <div className="rounded-md border" style={{ minHeight: `${pageSize * rowHeight}px` }}>
                 <Table>
                     {/* Table Header */}
                     <TableHeader>
@@ -166,7 +170,7 @@ function StatiststicsTable<T>({
                             ))
                         ) : table.getRowModel().rows.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+                                <TableCell colSpan={table.getAllColumns().length} className="text-center">
                                     No results.
                                 </TableCell>
                             </TableRow>

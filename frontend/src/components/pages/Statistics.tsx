@@ -49,19 +49,9 @@ function StatisticsHeader({
 }: StatisticsHeaderProps) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [domains, setDomains] = useState<Domain[]>([]);
+    const [dateRange, setDateRange] = useState<string|undefined>("30");
 
     const [showCustomDateRange, setShowCustomDateRange] = useState(false);
-
-    const setDateRange = (value: number|string) => {
-        const today = new Date();
-        const fromDate = new Date(today);
-        fromDate.setDate(fromDate.getDate() - parseInt(value.toString()));
-        setFromDate(fromDate.toISOString().split("T")[0] || "");
-
-        const toDate = new Date(today);
-        toDate.setDate(toDate.getDate() + 1);
-        setToDate(toDate.toISOString().split("T")[0] || "");
-    };
 
     useEffect(() => {
         const initialLoad = async () => {
@@ -76,7 +66,6 @@ function StatisticsHeader({
                         setSelectedDomain(domain);
                     }
                 }
-                setDateRange("30");
             } catch (error) {
                 toast.error("Failed to load domains");
                 throw error;
@@ -92,6 +81,19 @@ function StatisticsHeader({
             setSearchParams({}, { replace: true });
         }
     }, [selectedDomain?.id]);
+
+    useEffect(() => {
+        if (!dateRange) return;
+
+        const today = new Date();
+        const fromDate = new Date(today);
+        fromDate.setDate(fromDate.getDate() - parseInt(dateRange));
+        setFromDate(fromDate.toISOString().split("T")[0] || "");
+
+        const toDate = new Date(today);
+        toDate.setDate(toDate.getDate() + 1);
+        setToDate(toDate.toISOString().split("T")[0] || "");
+    }, [dateRange]);
 
     return (
         <div className="flex flex-col justify-between gap-4 sm:items-center sm:flex-row mb-6 min-h-12">
@@ -128,14 +130,18 @@ function StatisticsHeader({
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Select onValueChange={(value) => {
-                        if (value === "custom") {
-                            setShowCustomDateRange(true);
-                        } else {
-                            setShowCustomDateRange(false);
-                            setDateRange(value);
-                        }
-                    }}>
+                    <Select
+                        value={dateRange?.toString()}
+                        onValueChange={(value) => {
+                            if (value === "custom") {
+                                setShowCustomDateRange(true);
+                                setDateRange(undefined);
+                            } else {
+                                setShowCustomDateRange(false);
+                                setDateRange(value);
+                            }
+                        }}
+                    >
                         <SelectTrigger className="w-38">
                             <SelectValue placeholder="Last days" />
                         </SelectTrigger>
@@ -260,10 +266,10 @@ function Statistics() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 mb-2">
                                 <Globe className="h-5 w-5" />
-                                Visitors by Continent
+                                Continents
                             </CardTitle>
                             <CardDescription>
-                                Distribution of visitors by continent
+                                Visitor statistics by continent
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -273,7 +279,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={3}
+                                pageSize={5}
                                 preloadedPages={2}
                             />
                         </CardContent>
@@ -315,10 +321,10 @@ function Statistics() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 mb-2">
                                 <MapPin className="h-5 w-5" />
-                                Visitors by Country
+                                Countries
                             </CardTitle>
                             <CardDescription>
-                                Distribution of visitors by country
+                                Visitor statistics by country
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -328,7 +334,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={3}
+                                pageSize={5}
                                 preloadedPages={2}
                             />
                         </CardContent>
@@ -361,10 +367,10 @@ function Statistics() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 mb-2">
                                 <Monitor className="h-5 w-5" />
-                                Browser Distribution
+                                Browsers
                             </CardTitle>
                             <CardDescription>
-                                Distribution of visitors by browser
+                                Visitor statistics by browser
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -373,7 +379,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={3}
+                                pageSize={4}
                                 preloadedPages={2}
                             />
                         </CardContent>
