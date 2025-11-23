@@ -8,7 +8,7 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile"
 
-import type { PaginatedResponse, PaginatedStatisticsParameters } from "@/services/api/apiStatistics";
+import { LevelChoices, type PaginatedResponse, type PaginatedStatisticsParameters } from "@/services/api/apiStatistics";
 
 
 export interface StatisticsTableProps extends PaginatedStatisticsParameters {
@@ -22,11 +22,11 @@ interface TableProps<T> extends StatisticsTableProps {
 
 function StatiststicsTable<T>({
     columns,
-
     dataRetriever,
     domainId = undefined,
     fromDate = undefined,
     toDate = undefined,
+    level = LevelChoices.COUNTRY,
     pageSize = 5,
     preloadedPages = 1,
 }: TableProps<T>) {
@@ -64,6 +64,7 @@ function StatiststicsTable<T>({
             domainId,
             fromDate,
             toDate,
+            level,
             page: (backendPage / pagesToPreload) + 1,
             pageSize: pageSize * pagesToPreload,
             ordering: ordering ?? undefined,
@@ -133,7 +134,7 @@ function StatiststicsTable<T>({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border" style={{ minHeight: `${pageSize * rowHeight}px` }}>
+            <div className="rounded-md border" style={{ minHeight: `${(pageSize + 1) * rowHeight}px` }}>
                 <Table>
                     {/* Table Header */}
                     <TableHeader>

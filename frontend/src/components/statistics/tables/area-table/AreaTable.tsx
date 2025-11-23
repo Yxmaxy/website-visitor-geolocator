@@ -12,7 +12,7 @@ export default function AreaTable({
     preloadedPages,
 }: StatisticsTableProps) {
     return <StatisticsTable<AreaStatistics>
-        columns={columns}
+        columns={columns(level)}
         dataRetriever={StatisticsApiService.getAreaStatistics}
         domainId={domainId}
         fromDate={fromDate}

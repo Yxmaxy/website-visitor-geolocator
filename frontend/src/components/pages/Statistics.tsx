@@ -279,7 +279,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={5}
+                                pageSize={4}
                                 preloadedPages={2}
                             />
                         </CardContent>
@@ -339,7 +339,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={5}
+                                pageSize={4}
                                 preloadedPages={2}
                             />
                         </CardContent>
@@ -384,7 +384,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
-                                pageSize={4}
+                                pageSize={3}
                                 preloadedPages={2}
                             />
                         </CardContent>
