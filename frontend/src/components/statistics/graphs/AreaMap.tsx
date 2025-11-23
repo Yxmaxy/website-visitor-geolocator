@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { MapContainer, GeoJSON } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
 import type { FeatureCollection } from "geojson";
 import { toast } from "sonner";
 
@@ -9,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import StatisticsApiService, { LevelChoices, type AreaStatistics } from "@/services/api/apiStatistics";
+
 
 interface AreaMapProps {    
     domainId?: number;
@@ -111,7 +114,7 @@ export default function AreaMap({
                 touchZoom={false}
                 keyboard={false}
                 style={{ height: "100%", width: "100%", minHeight: "280px" }}
-                className="rounded-lg !bg-transparent overflow-hidden"
+                className="rounded-lg !bg-transparent"
             >
                 <GeoJSON
                     ref={setGeoJSON}
