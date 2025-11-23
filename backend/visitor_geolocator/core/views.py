@@ -24,7 +24,7 @@ def tracking_script(request: HttpRequest):
     """Serves the tracking script that will be embedded on client websites."""
 
     host = f"{request.scheme}://{request.get_host()}"
-    endpoint = reverse("wvg_core:website_visitor_geolocator_visitor")
+    endpoint = reverse("wvg_core:website_visitor_geolocator_track_visitor")
     api_key = request.GET.get("api_key")
 
     script_content = render_to_string(

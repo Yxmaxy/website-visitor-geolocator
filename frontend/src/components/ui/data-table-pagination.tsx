@@ -14,14 +14,22 @@ import {
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
+    Loader2,
 } from "lucide-react"
 
 interface DataTablePaginationProps<TData> {
     table: Table<TData>,
     showRowsPerPage?: boolean,
+    totalPages?: number,
+    isPageFetching?: boolean,
 }
 
-export function DataTablePagination<TData>({ table, showRowsPerPage = false }: DataTablePaginationProps<TData>) {
+export function DataTablePagination<TData>({
+    table,
+    showRowsPerPage = false,
+    totalPages,
+    isPageFetching = false
+}: DataTablePaginationProps<TData>) {
     return (
         <div className="flex items-center justify-between space-x-6 lg:space-x-8">
             {/* Rows per page */}
@@ -50,8 +58,7 @@ export function DataTablePagination<TData>({ table, showRowsPerPage = false }: D
 
             {/* Page number */}
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
+                Page {table.getState().pagination.pageIndex + 1} of {totalPages}
             </div>
 
             {/* Pagination buttons */}
@@ -81,10 +88,10 @@ export function DataTablePagination<TData>({ table, showRowsPerPage = false }: D
                     size="icon"
                     className="size-8"
                     onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
+                    disabled={isPageFetching || totalPages !== undefined && table.getState().pagination.pageIndex >= totalPages - 1}
                 >
                     <span className="sr-only">Go to next page</span>
-                    <ChevronRight />
+                    {isPageFetching ? <Loader2 className="animate-spin" /> : <ChevronRight />}
                 </Button>
                 <Button
                     variant="outline"

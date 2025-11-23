@@ -26,10 +26,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import NotificationToggle from "@/components/NotificationToggle";
 import InstallButton from "@/components/InstallButton";
 
-import SettingsApiService from "@/services/apiSettings";
-import type { NotificationPreferences } from "@/services/apiSettings";
+import SettingsApiService from "@/services/api/apiSettings";
+import type { NotificationPreferences } from "@/services/api/apiSettings";
 
-import { APP_VERSION } from "@/utils/version";
+import { APP_VERSION } from "@/services/version";
 
 import {
     Settings as SettingsIcon,
@@ -47,7 +47,7 @@ import {
     Download,
     Trash2,
 } from "lucide-react";
-import CacheService from "@/services/cacheService";
+import CacheService from "@/services/cache";
 
 // Settings Header Component
 interface SettingsHeaderProps {

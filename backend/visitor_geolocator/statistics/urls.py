@@ -5,14 +5,19 @@ from visitor_geolocator.statistics import views
 app_name = "wvg_statistics"
 
 urlpatterns = [
-    path("area/", views.AreaStatisticsAPIView.as_view(), name="area_statistics_api"),
     path(
         "geometries/", views.AreaGeometriesAPIView.as_view(), name="area_geometries_api"
     ),
+    path("area/", views.AreaStatisticsAPIView.as_view(), name="area_statistics_api"),
     path(
-        "visitors/",
-        views.LatestVisitorsAPIView.as_view(),
-        name="latest_visitors_api",
+        "visitor/list/",
+        views.VisitorListAPIView.as_view(),
+        name="visitor_list_api",
+    ),
+    path(
+        "visitor/count/",
+        views.VisitorCountAPIView.as_view(),
+        name="visitor_count_api",
     ),
     path(
         "user-agents/",

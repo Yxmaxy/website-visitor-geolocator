@@ -16,9 +16,30 @@
     font-weight: 600;
 }
 
+.recharts-default-tooltip {
+    display: flex;
+    flex-direction: column;
 
+    /* line-height: normal; */
+    font-size: 12px !important;
+    font-weight: normal;
+    font-family: "Lexend", sans-serif !important;
+
+    padding: 10px !important;
+    border-radius: var(--radius) !important;
+}
+.recharts-tooltip-label {
+    font-weight: bold;
+}
+.recharts-tooltip-label, .recharts-tooltip-item {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Leaflet */
 .leaflet-tooltip {
     background-color: var(--background) !important;
+    opacity: 0.9 !important;
     color: var(--foreground) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
