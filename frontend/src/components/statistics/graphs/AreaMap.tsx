@@ -79,7 +79,7 @@ export default function AreaMap({
         return {
             weight: 0,
             color: "var(--muted-foreground)",
-            opacity: 1,
+            opacity: 0.9,
             fillColor: "var(--primary)",
             fillOpacity: intensity,
         };
@@ -89,7 +89,7 @@ export default function AreaMap({
         const visitorCount = visitorCountMap.get(feature.properties.name) || 0;
         if (visitorCount > 0) {
             layer.bindTooltip(
-                `<b>${feature.properties.name}</b><br/>Visitors: ${visitorCount}`,
+                `<b>${feature.properties.name}</b><br/>visitors: ${visitorCount}`,
                 { permanent: false, sticky: true, className: "text-black" }
             );
         }
