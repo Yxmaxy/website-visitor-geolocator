@@ -82,7 +82,7 @@ export default function AreaMap({
         };
     };
 
-    const onEachFeature = (feature: any, layer: any) => {    
+    const onEachFeature = (feature: any, layer: any) => {
         const visitorCount = visitorCountMap.get(feature.properties.name) || 0;
         if (visitorCount > 0) {
             layer.bindTooltip(
@@ -111,7 +111,7 @@ export default function AreaMap({
                 touchZoom={false}
                 keyboard={false}
                 style={{ height: "100%", width: "100%", minHeight: "280px" }}
-                className="rounded-lg !bg-transparent"
+                className="rounded-lg !bg-transparent overflow-hidden"
             >
                 <GeoJSON
                     ref={setGeoJSON}
@@ -139,13 +139,17 @@ interface AreaRegionSelectProps {
 
 export function AreaRegionSelect({ selectableRegions, selectedRegion, setSelectedRegion }: AreaRegionSelectProps) {
     function setSelectedRegionFromName(name: string) {
-        setSelectedRegion(selectableRegions?.find(region => region.name === name));
+        if (name === "all") {
+            setSelectedRegion(undefined);
+        } else {
+            setSelectedRegion(selectableRegions?.find(region => region.name === name));
+        }
     }
 
     return (
         <div className="flex items-center gap-2">
             <Select
-                value={selectedRegion?.name}
+                value={selectedRegion?.name ?? "all"}
                 onValueChange={setSelectedRegionFromName}
             >
                 <SelectTrigger>

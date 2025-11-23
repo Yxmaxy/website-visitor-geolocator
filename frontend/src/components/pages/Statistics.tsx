@@ -290,21 +290,25 @@ function Statistics() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center gap-2 mb-2">
-                                <div>
-                                    <CardTitle className="flex items-center gap-2 mb-2">
-                                        <MapPin className="h-5 w-5" />
-                                        Visitors by Country
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Distribution of visitors by country
-                                    </CardDescription>
-                                </div>
-                                <AreaRegionSelect
-                                    selectableRegions={CONTINENT_REGIONS}
-                                    selectedRegion={selectedCountryRegion}
-                                    setSelectedRegion={setSelectedCountryRegion}
-                                />
+                            <div>
+                                <CardTitle>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="h-5 w-5" />
+                                            Visitors by Country
+                                        </div>
+                                        <div className="font-normal">
+                                            <AreaRegionSelect
+                                                selectableRegions={CONTINENT_REGIONS}
+                                                selectedRegion={selectedCountryRegion}
+                                                setSelectedRegion={setSelectedCountryRegion}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardTitle>
+                                <CardDescription>
+                                    Distribution of visitors by country
+                                </CardDescription>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -314,6 +318,7 @@ function Statistics() {
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
+                                selectedRegion={selectedCountryRegion}
                             />
                         </CardContent>
                     </Card>
