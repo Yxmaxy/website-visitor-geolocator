@@ -74,6 +74,8 @@ You can access the admin interface at `http://localhost:8000/admin/`.
 
 #### Optional - test a notification on website visit
 
+Replace the API key in the `website-example.html` file with the API key of your domain.
+
 You can test a notification on website visit by running the following command:
 
 ```

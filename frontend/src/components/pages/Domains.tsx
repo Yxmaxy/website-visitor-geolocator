@@ -635,7 +635,7 @@ function Domains() {
         try {
             const scriptData = {
                 script_url: domain.script_url,
-                script_tag: `<script src="${domain.script_url}"></script>`,
+                script_tag: `<script async src="${domain.script_url}"></script>`,
                 api_key: domain.api_key
             };
             setScriptData(scriptData);
