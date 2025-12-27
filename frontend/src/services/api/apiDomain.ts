@@ -1,4 +1,9 @@
-import { ApiService } from "@/services/api/api";
+import { createDjangoApi } from "django-session-api";
+
+const api = createDjangoApi({
+    baseUrl: import.meta.env.VITE_BASE_BACKEND_API_URL,
+    loginUrl: import.meta.env.VITE_LOGIN_URL,
+});
 
 export interface Domain {
     id: number;
@@ -31,18 +36,18 @@ export interface DomainScript {
 
 export class DomainApiService {
     static async getDomains(): Promise<Domain[]> {
-        return ApiService.get<Domain[]>("/domain/");
+        return api.get<Domain[]>("/domain/");
     }
 
     static async createDomain(data: DomainCreate): Promise<Domain> {
-        return ApiService.post<Domain, DomainCreate>("/domain/", data);
+        return api.post<Domain, DomainCreate>("/domain/", data);
     }
 
     static async updateDomain(domainId: number, data: DomainUpdate): Promise<Domain> {
-        return ApiService.put<Domain, DomainUpdate>(`/domain/${domainId}/`, data);
+        return api.put<Domain, DomainUpdate>(`/domain/${domainId}/`, data);
     }
 
     static async deleteDomain(domainId: number): Promise<void> {
-        return ApiService.delete(`/domain/${domainId}/`);
+        return api.delete(`/domain/${domainId}/`);
     }
 }

@@ -1,5 +1,9 @@
-import { ApiService } from "@/services/api/api";
+import { createDjangoApi } from "django-session-api";
 
+const api = createDjangoApi({
+    baseUrl: import.meta.env.VITE_NOTIFICATIONS_URL,
+    loginUrl: import.meta.env.VITE_LOGIN_URL,
+});
 
 class PushNotificationService {
     private static instance: PushNotificationService;
@@ -116,14 +120,14 @@ class PushNotificationService {
 
     private async sendSubscriptionToServer(subscription: PushSubscription): Promise<boolean> {
         try {
-            const response = await ApiService.post(`/subscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`, {
+            await api.post(`/subscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`, {
                 endpoint: subscription.endpoint,
                 keys: {
                     p256dh: this.arrayBufferToBase64(subscription.getKey("p256dh")!),
                     auth: this.arrayBufferToBase64(subscription.getKey("auth")!)
                 },
-            }, { useNotificationUrl: true });
-            return response.success;
+            });
+            return true;
         } catch (error) {
             console.error("Error sending subscription to server:", error);
             return false;
@@ -132,7 +136,7 @@ class PushNotificationService {
 
     private async removeSubscriptionFromServer(): Promise<boolean> {
         try {
-            await ApiService.delete(`/unsubscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`, { useNotificationUrl: true });
+            await api.delete(`/unsubscribe/${import.meta.env.VITE_NOTIFICATIONS_APP_NAME}/`);
             return true;
         } catch (error) {
             console.error("Error removing subscription from server:", error);

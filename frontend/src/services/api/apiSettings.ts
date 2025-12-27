@@ -1,4 +1,9 @@
-import { ApiService } from "@/services/api/api";
+import { createDjangoApi } from "django-session-api";
+
+const api = createDjangoApi({
+    baseUrl: import.meta.env.VITE_BASE_BACKEND_API_URL,
+    loginUrl: import.meta.env.VITE_LOGIN_URL,
+});
 
 export interface NotificationPreferences {
     id?: number;
@@ -15,13 +20,13 @@ export interface NotificationPreferences {
 
 class SettingsApiService {
     static async getNotificationPreferences(): Promise<NotificationPreferences> {
-        return ApiService.get<NotificationPreferences>("/settings/notifications/");
+        return api.get<NotificationPreferences>("/settings/notifications/");
     }
 
     static async updateNotificationPreferences(
         preferences: Partial<NotificationPreferences>
     ): Promise<NotificationPreferences> {
-        return ApiService.put<NotificationPreferences>(
+        return api.put<NotificationPreferences, any>(
             "/settings/notifications/",
             preferences
         );

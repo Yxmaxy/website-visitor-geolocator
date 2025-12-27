@@ -1,8 +1,12 @@
-import { ApiService } from "@/services/api/api";
+import { createDjangoApi } from "django-session-api";
 
 import CacheService from "@/services/cache";
 import type { FeatureCollection } from "geojson";
 
+const api = createDjangoApi({
+    baseUrl: import.meta.env.VITE_BASE_BACKEND_API_URL,
+    loginUrl: import.meta.env.VITE_LOGIN_URL,
+});
 
 export enum LevelChoices {
     COUNTRY = 1,
@@ -58,8 +62,6 @@ export interface VisitorCountByDate {
 
 
 class StatisticsApiService {
-    private static geometryPromises: Record<string, Promise<FeatureCollection>> = {};
-
     static buildQueryString(params: Record<string, any>): string {
         // helper function to build query string from params
         // removes undefined and null values
@@ -84,39 +86,33 @@ class StatisticsApiService {
             return cachedGeometries;
         }
 
-        // returns promise if request is already in progress
-        if (this.geometryPromises[cacheKey]) {
-            return await this.geometryPromises[cacheKey];
-        } else {
-            const queryString = StatisticsApiService.buildQueryString({ level });
-            this.geometryPromises[cacheKey] = ApiService.get(`/statistics/geometries/?${queryString}`);
-        }
+        const queryString = StatisticsApiService.buildQueryString({ level });
+        const geometries = await api.get<FeatureCollection>(`/statistics/geometries/?${queryString}`);
 
-        const geometries = await this.geometryPromises[cacheKey];
         if (geometries && geometries.features.length > 0) {
             await CacheService.set(cacheKey, geometries, cacheTime);
         }
-        return geometries;
+        return geometries ?? { type: "FeatureCollection", features: [] };
     }
 
     static async getAreaStatistics(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<AreaStatistics>> {
         const queryString = StatisticsApiService.buildQueryString(options);
-        return ApiService.get<PaginatedResponse<AreaStatistics>>(`/statistics/area/?${queryString}`);
+        return api.get<PaginatedResponse<AreaStatistics>>(`/statistics/area/?${queryString}`);
     };
 
     static async getLatestVisitors(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<Visitor>> {
         const queryString = StatisticsApiService.buildQueryString(options);
-        return ApiService.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
+        return api.get<PaginatedResponse<Visitor>>(`/statistics/visitor/list/?${queryString}`);
     }
 
     static async getUserAgentDistribution(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<UserAgentDistribution>> {
         const queryString = StatisticsApiService.buildQueryString(options);
-        return ApiService.get<PaginatedResponse<UserAgentDistribution>>(`/statistics/user-agents/?${queryString}`);
+        return api.get<PaginatedResponse<UserAgentDistribution>>(`/statistics/user-agents/?${queryString}`);
     }
 
     static async getVisitorCountByDate(options: StatisticsParameters): Promise<VisitorCountByDate[]> {
         const queryString = StatisticsApiService.buildQueryString(options);
-        return ApiService.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
+        return api.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
     }
 }
 
