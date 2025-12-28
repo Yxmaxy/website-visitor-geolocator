@@ -1,9 +1,11 @@
 import { clientsClaim } from "workbox-core"
 import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching"
+import { serviceWorkerPushHandler } from "django-simple-notifications";
 
-const VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.0.0";
+import { APP_VERSION } from "@/services/version";
+
 const DEBUG = import.meta.env.MODE === "development";
-const CACHE_NAME = `wvg-cache-v1 ${VERSION}`;
+const CACHE_NAME = `wvg-cache-v1 ${APP_VERSION}`;
 
 clientsClaim();
 
@@ -11,12 +13,12 @@ cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener("install", (event) => {
-    if (DEBUG) console.log(`Service worker installing version ${VERSION}`);
+    if (DEBUG) console.log(`Service worker installing version ${APP_VERSION}`);
     self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-    if (DEBUG) console.log(`Service worker activating version ${VERSION}`);
+    if (DEBUG) console.log(`Service worker activating version ${APP_VERSION}`);
     event.waitUntil(clientsClaim());
 });
 
@@ -43,50 +45,7 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-    let notificationData = {
-        title: "New Notification",
-        body: "You have a new notification",
-        vibrate: [],
-        data: {}
-    };
-
-    // override default data
-    if (event.data) {
-        try {
-            const pushData = event.data.json();
-            notificationData = {
-                ...notificationData,
-                ...pushData
-            };
-        } catch (e) {
-            console.error("Error parsing push data:", e);
-        }
-    }
-
-    const options = {
-        body: notificationData.body,
-        icon: notificationData.icon,
-        badge: notificationData.badge,
-        vibrate: notificationData.vibrate,
-        data: notificationData.data,
-        requireInteraction: false,
-        // actions: [
-        //     {
-        //         action: "view",
-        //         title: "View Details",
-        //         icon: "/logo.svg"
-        //     },
-        //     {
-        //         action: "dismiss",
-        //         title: "Dismiss",
-        //         icon: "/logo.svg"
-        //     }
-        // ]
-    };
-
-    event.waitUntil(
-        self.registration.showNotification(notificationData.title, options)
-    );
+    serviceWorkerPushHandler(self.registration, event);
 });
 
 // // Notification click event

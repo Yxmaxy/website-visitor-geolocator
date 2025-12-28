@@ -57,7 +57,6 @@ class VisitorNotificationService:
                     subscription=subscription,
                     title=f"New visitor on {visitor.domain}",
                     body=f"New visitor on {visitor.domain} from {visitor.location_description}",
-                    vibrate=[200, 100, 200],
                     icon="/logo.svg",
                     badge="/logo.svg",
                 )
