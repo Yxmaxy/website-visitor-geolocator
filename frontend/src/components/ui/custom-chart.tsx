@@ -46,7 +46,7 @@ type ChartType =
 interface BaseChartProps {
     data: any[]
     className?: string
-    width?: string | number
+    width?: `${number}%` | number
     height?: number
     children?: React.ReactNode
 }
