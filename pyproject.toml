@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "django-visitor-geolocator"
+name = "website-visitor-geolocator"
 dynamic = ["version"]
 description = "A Django app for geolocating website visitors"
 readme = "README.md"
@@ -20,7 +20,13 @@ classifiers = [
 ]
 dependencies = [
     "Django>=4.2",
-    # Add other dependencies here
+    "requests>=2.32",
+    "django-ipware>=7.0",
+    "django-cors-headers>=4.7",
+    "python-dotenv>=1.1",
+    "pywebpush>=2.0",
+    "djangorestframework>=3.16",
+    "git+https://github.com/Yxmaxy/django-simple-notifications.git@v1.0.0",
 ]
 
 [project.urls]
