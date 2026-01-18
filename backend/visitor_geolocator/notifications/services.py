@@ -7,7 +7,6 @@ from django.conf import settings
 from visitor_geolocator.core.models import Visitor
 from visitor_geolocator.notifications.models import NotificationPreferences
 
-from simple_notifications.models import PushSubscription
 from simple_notifications.services import NotificationService
 
 logger = logging.getLogger(__name__)
@@ -20,13 +19,13 @@ class VisitorNotificationService:
     def handle_new_visitor(visitor: Visitor):
         """Send a new visitor notification to the domain owner"""
         try:
-            subscriptions = PushSubscription.objects.filter(
+            subscription = NotificationService.get_user_subscription(
                 user=visitor.domain.created_by.user,
                 app_name=settings.WEBSITE_VISITOR_GEOLOCATOR_NOTIFICATIONS_APP_NAME,
             )
 
             # skip if no subscriptions exist
-            if not subscriptions.exists():
+            if not subscription:
                 return
 
             try:
@@ -52,14 +51,13 @@ class VisitorNotificationService:
             ):
                 return
 
-            for subscription in subscriptions:
-                NotificationService.send_push_notification(
-                    subscription=subscription,
-                    title=f"New visitor on {visitor.domain}",
-                    body=f"New visitor on {visitor.domain} from {visitor.location_description}",
-                    icon="/logo.svg",
-                    badge="/logo.svg",
-                )
+            NotificationService.send_push_notification(
+                subscription=subscription,
+                title=f"New visitor on {visitor.domain}",
+                body=f"New visitor on {visitor.domain} from {visitor.location_description}",
+                icon="/logo.svg",
+                badge="/logo.svg",
+            )
 
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error handling new visitor notification: %s", e)
