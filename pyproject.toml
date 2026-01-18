@@ -26,7 +26,6 @@ dependencies = [
     "python-dotenv>=1.1",
     "pywebpush>=2.0",
     "djangorestframework>=3.16",
-    "git+https://github.com/Yxmaxy/django-simple-notifications.git@v1.0.0",
 ]
 
 [project.urls]
