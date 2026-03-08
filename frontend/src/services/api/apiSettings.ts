@@ -5,32 +5,45 @@ const api = createDjangoApi({
     loginUrl: import.meta.env.VITE_LOGIN_URL,
 });
 
-export interface NotificationPreferences {
-    id?: number;
-    notification_chance: number;
+export interface PushNotificationPreferences {
+    notification_frequency: number;
+    quiet_hours_start: string | null;
+    quiet_hours_end: string | null;
+    quiet_hours_timezone: string;
+}
+
+export interface SummaryNotificationPreferences {
     new_visitor_notifications: boolean;
     daily_summary_notifications: boolean;
     weekly_summary_notifications: boolean;
-    quiet_hours_start: string | null;
-    quiet_hours_end: string | null;
-    notification_vibration: boolean;
-    created_at?: string;
-    updated_at?: string;
 }
 
 class SettingsApiService {
-    static async getNotificationPreferences(): Promise<NotificationPreferences> {
-        return api.get<NotificationPreferences>("/settings/notifications/");
+    static async getPushNotificationPreferences(): Promise<PushNotificationPreferences> {
+        return api.get<PushNotificationPreferences>("/settings/notifications/");
     }
 
-    static async updateNotificationPreferences(
-        preferences: Partial<NotificationPreferences>
-    ): Promise<NotificationPreferences> {
-        return api.put<NotificationPreferences, any>(
+    static async updatePushNotificationPreferences(
+        preferences: Partial<PushNotificationPreferences>
+    ): Promise<PushNotificationPreferences> {
+        return api.put<PushNotificationPreferences, any>(
+            "/settings/notifications/",
+            preferences
+        );
+    }
+
+    static async getSummaryNotificationPreferences(): Promise<SummaryNotificationPreferences> {
+        return api.get<SummaryNotificationPreferences>("/settings/notifications/");
+    }
+
+    static async updateSummaryNotificationPreferences(
+        preferences: Partial<SummaryNotificationPreferences>
+    ): Promise<SummaryNotificationPreferences> {
+        return api.put<SummaryNotificationPreferences, any>(
             "/settings/notifications/",
             preferences
         );
     }
 }
 
-export default SettingsApiService; 
+export default SettingsApiService;

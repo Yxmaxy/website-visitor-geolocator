@@ -9,10 +9,8 @@ from django.contrib.auth import logout
 from visitor_geolocator.core.models import Domain, WebsiteVisitorGeolocatorUser
 from visitor_geolocator.core.services import UserService
 from visitor_geolocator.frontend.serializers import UserSerializer, DomainSerializer
-from visitor_geolocator.notifications.models import NotificationPreferences
-from visitor_geolocator.notifications.serializers import (
-    NotificationPreferencesSerializer,
-)
+from visitor_geolocator.notifications.models import SummaryNotificationPreferences
+from visitor_geolocator.notifications.serializers import SummaryNotificationPreferencesSerializer
 from visitor_geolocator.frontend.permissions import (
     HasWebsiteVisitorGeolocatorPermission,
 )
@@ -63,33 +61,29 @@ class DomainRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class NotificationPreferencesAPIView(APIView):
-    """View for notification preferences operations"""
+    """View for WVG summary notification preferences."""
 
     permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
 
-    def get(self, request):
-        """Get user notification preferences"""
-        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
-        preferences, _ = NotificationPreferences.objects.get_or_create(
-            website_visitor_geolocator_user=user
+    def _get_wvg_user_and_prefs(self, request):
+        wvg_user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
+        preferences, _ = SummaryNotificationPreferences.objects.get_or_create(
+            website_visitor_geolocator_user=wvg_user
         )
+        return preferences
 
-        serializer = NotificationPreferencesSerializer(preferences)
+    def get(self, request):
+        preferences = self._get_wvg_user_and_prefs(request)
+        serializer = SummaryNotificationPreferencesSerializer(preferences)
         return Response(serializer.data)
 
     def put(self, request):
-        """Update user notification preferences"""
-        user, _ = WebsiteVisitorGeolocatorUser.objects.get_or_create(user=request.user)
-        preferences, _ = NotificationPreferences.objects.get_or_create(
-            website_visitor_geolocator_user=user
-        )
-
-        serializer = NotificationPreferencesSerializer(
+        preferences = self._get_wvg_user_and_prefs(request)
+        serializer = SummaryNotificationPreferencesSerializer(
             preferences, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return Response(serializer.data)
 
 

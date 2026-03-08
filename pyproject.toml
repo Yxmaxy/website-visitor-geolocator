@@ -24,8 +24,8 @@ dependencies = [
     "django-ipware>=7.0",
     "django-cors-headers>=4.7",
     "python-dotenv>=1.1",
-    "pywebpush>=2.0",
     "djangorestframework>=3.16",
+    "django-simple-notifications @ git+https://github.com/Yxmaxy/django-simple-notifications.git@v2.0.0",
 ]
 
 [project.urls]
@@ -46,10 +46,10 @@ include-package-data = true
 visitor_geolocator = "backend/visitor_geolocator"
 
 [tool.setuptools.package-data]
-"visitor_geolocator.core" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
-"visitor_geolocator.frontend" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
-"visitor_geolocator.notifications" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt"]
-"visitor_geolocator.statistics" = ["migrations/*.py", "migrations/*/*.py", "templates/*.txt", "management/*.py", "management/*/*.py", "data/*.geojson"]
+"visitor_geolocator.core" = ["migrations/*.py", "templates/*.txt"]
+"visitor_geolocator.frontend" = ["migrations/*.py"]
+"visitor_geolocator.notifications" = ["migrations/*.py"]
+"visitor_geolocator.statistics" = ["migrations/*.py", "templates/*.txt", "management/*.py", "data/*.geojson"]
 
 [tool.setuptools.dynamic]
 version = {file = "version.txt"}

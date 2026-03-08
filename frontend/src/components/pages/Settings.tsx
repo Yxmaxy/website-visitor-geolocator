@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { 
+import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -20,51 +17,38 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import NotificationToggle from "@/components/NotificationToggle";
 import InstallButton from "@/components/InstallButton";
 
 import SettingsApiService from "@/services/api/apiSettings";
-import type { NotificationPreferences } from "@/services/api/apiSettings";
+import type { SummaryNotificationPreferences } from "@/services/api/apiSettings";
 
 import { APP_VERSION } from "@/services/version";
 
 import {
     Settings as SettingsIcon,
     BellRing,
-    Volume2,
-    Clock,
     LogOut,
     AlertCircle,
-    Save,
-    X,
-    Timer,
     Palette,
     User,
     BellDot,
     Download,
     Trash2,
+    ExternalLink,
 } from "lucide-react";
 import CacheService from "@/services/cache";
 
 // Settings Header Component
-interface SettingsHeaderProps {
-    handleSaveSettings: () => void;
-}
-
-function SettingsHeader({ handleSaveSettings }: SettingsHeaderProps) {
+function SettingsHeader() {
     return (
-        <div className="flex items-center justify-between mb-6 min-h-12">
+        <div className="flex items-center mb-6 min-h-12">
             <div className="flex items-center gap-2">
                 <SettingsIcon className="h-6 w-6" />
                 <h1 className="text-2xl font-bold">Settings</h1>
             </div>
-            <Button onClick={handleSaveSettings}>
-                <Save className="w-4 h-4 mr-1" />
-                Save Settings
-            </Button>
         </div>
     );
 }
@@ -73,12 +57,11 @@ function SettingsHeader({ handleSaveSettings }: SettingsHeaderProps) {
 function LoadingSkeleton() {
     return (
         <div>
-            <div className="flex items-center justify-between mb-6 min-h-12">
+            <div className="flex items-center mb-6 min-h-12">
                 <div className="flex items-center gap-2">
                     <SettingsIcon className="h-6 w-6" />
                     <h1 className="text-2xl font-bold">Settings</h1>
                 </div>
-                <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
@@ -201,7 +184,7 @@ function AccountCard({ onLogout, disabled = false }: AccountCardProps) {
 
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction  onClick={onLogout}>
+                            <AlertDialogAction onClick={onLogout}>
                                 Logout
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -213,233 +196,114 @@ function AccountCard({ onLogout, disabled = false }: AccountCardProps) {
     );
 }
 
-// Notification Preferences Card Component
-interface NotificationPreferencesCardProps {
-    notificationPreferences: NotificationPreferences;
-    setNotificationPreferences: (preferences: NotificationPreferences) => void;
-    disabled?: boolean;
-}
-
-function NotificationPreferencesCard({ 
-    notificationPreferences,
-    setNotificationPreferences,
-    disabled = false
-}: NotificationPreferencesCardProps) {
-    const handleSettingsUpdate = (preferences: Partial<NotificationPreferences>) => {
-        setNotificationPreferences({...notificationPreferences, ...preferences});
+function PushNotificationPreferencesCard() {
+    const handleOpenNotificationsSettings = () => {
+        window.location.href = import.meta.env.VITE_NOTIFICATIONS_MANAGE_URL;
     };
 
     return (
-        <Card className="relative">
-            <div className="absolute top-0 right-0 left-0 bottom-0 bg-gray-500/50 flex items-center justify-center rounded-xl z-20">
-                <p className="text-white text-sm">Comming soon</p>
-            </div>
-
+        <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 mb-1.5">
                     <BellDot className="h-5 w-5" />
                     Notification Preferences
                 </CardTitle>
                 <CardDescription>
-                    Customize how and when you receive notifications
+                    Customize how and when you receive push notifications
                 </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
+                <Button variant="outline" size="sm" onClick={handleOpenNotificationsSettings} className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    Open Notifications Settings
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
 
-                {/* Notification Chance */}
-                <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium flex items-center gap-2 mb-1">
-                            <Timer className="h-4 w-4" />
-                            Notification Frequency
-                        </Label>
-                        <Badge variant="secondary">
-                            {notificationPreferences.notification_chance}%
-                        </Badge>
+// Summary Notification Preferences Card Component (Coming Soon)
+interface SummaryNotificationPreferencesCardProps {
+    summaryPreferences: SummaryNotificationPreferences;
+    setSummaryPreferences: (preferences: SummaryNotificationPreferences) => void;
+}
+
+function SummaryNotificationPreferencesCard({
+    summaryPreferences,
+    setSummaryPreferences,
+}: SummaryNotificationPreferencesCardProps) {
+    const handleUpdate = (partial: Partial<SummaryNotificationPreferences>) => {
+        setSummaryPreferences({ ...summaryPreferences, ...partial });
+    };
+
+    return (
+        <Card className="relative">
+            <div className="absolute top-0 right-0 left-0 bottom-0 bg-gray-500/50 flex items-center justify-center rounded-xl z-20">
+                <p className="text-white text-sm">Coming soon</p>
+            </div>
+
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 mb-1.5">
+                    <BellRing className="h-5 w-5" />
+                    Summary Notifications
+                </CardTitle>
+                <CardDescription>
+                    Configure periodic summary notifications for your website
+                </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+
+                <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">New Visitor Alerts</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Get notified when new visitors arrive
+                        </p>
                     </div>
-                    <Slider
-                        value={[notificationPreferences.notification_chance]}
-                        onValueChange={(value) => {
-                            handleSettingsUpdate({ notification_chance: value[0] });
-                        }}
-                        max={100}
-                        min={0}
-                        step={5}
-                        disabled={disabled}
+                    <Switch
+                        checked={summaryPreferences.new_visitor_notifications}
+                        onCheckedChange={(checked) => handleUpdate({ new_visitor_notifications: checked })}
                     />
-                    <p className="text-sm text-muted-foreground">
-                        Lower values mean fewer notifications. Higher values mean more frequent notifications.
-                    </p>
                 </div>
 
                 <Separator />
 
-                {/* Notification Types */}
-                <div className="space-y-4">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
-                        <BellRing className="h-4 w-4" />
-                        Notification Types
-                    </h4>
-                    
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">New Visitor Alerts</Label>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Get notified when new visitors arrive
-                                </p>
-                            </div>
-                            <Switch
-                                checked={notificationPreferences.new_visitor_notifications}
-                                onCheckedChange={(checked) => {
-                                    handleSettingsUpdate({ new_visitor_notifications: checked });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
+                <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Daily Summary</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Receive a daily summary of your website's activity
+                        </p>
                     </div>
-
-                    {/* <Separator />
-
-                    TODO: maybe monthly instead of daily ...
-
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">Daily Summary Notifications</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Get a daily summary of your website's activity
-                                </p>
-                            </div>
-                            <Switch
-                                checked={notificationPreferences.daily_summary_notifications}
-                                onCheckedChange={(checked) => {
-                                    handleSettingsUpdate({ daily_summary_notifications: checked });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">Weekly Summary Notifications</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Get a weekly summary of your website's activity
-                                </p>
-                            </div>
-                            <Switch
-                                checked={notificationPreferences.weekly_summary_notifications}
-                                onCheckedChange={(checked) => {
-                                    handleSettingsUpdate({ weekly_summary_notifications: checked });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
-                    </div> */}
+                    <Switch
+                        checked={summaryPreferences.daily_summary_notifications}
+                        onCheckedChange={(checked) => handleUpdate({ daily_summary_notifications: checked })}
+                    />
                 </div>
 
                 <Separator />
 
-                {/* Quiet Hours */}
-                <div className="space-y-4">
-                    <div className="flex justify-between">
-                        <div className="space-y-1">
-                            <h4 className="text-sm font-medium flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4" />
-                                Quiet Hours
-                            </h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                Set times when you don't want to receive notifications
-                            </p>
-                        </div>
+                <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <Label className="text-sm font-medium">Weekly Summary</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Receive a weekly summary of your website's activity
+                        </p>
                     </div>
-                    
-                    <div className="flex items-end gap-2">
-                        <div className="space-y-2 flex-1 mt-1.5">
-                            <Label htmlFor="quiet-start">Start Time</Label>
-                            <Input
-                                id="quiet-start"
-                                type="time"
-                                value={notificationPreferences.quiet_hours_start || ""}
-                                onChange={(e) => {
-                                    handleSettingsUpdate({ quiet_hours_start: e.target.value || null });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
-                        <div className="space-y-2 flex-1 mt-1.5">
-                            <Label htmlFor="quiet-end">End Time</Label>
-                            <Input
-                                id="quiet-end"
-                                type="time"
-                                value={notificationPreferences.quiet_hours_end || ""}
-                                onChange={(e) => {
-                                    handleSettingsUpdate({ quiet_hours_end: e.target.value || null });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                        handleSettingsUpdate({ 
-                                            quiet_hours_start: null, 
-                                            quiet_hours_end: null 
-                                        });
-                                    }}
-                                    disabled={disabled || (!notificationPreferences.quiet_hours_start && !notificationPreferences.quiet_hours_end)}
-                                    className="h-9 w-9"
-                                >
-                                    <X />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Clear</TooltipContent>
-                        </Tooltip>
-                    </div>
+                    <Switch
+                        checked={summaryPreferences.weekly_summary_notifications}
+                        onCheckedChange={(checked) => handleUpdate({ weekly_summary_notifications: checked })}
+                    />
                 </div>
 
-                <Separator />
-
-                {/* Notification Effects */}
-                <div className="space-y-4">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
-                        <Volume2 className="h-4 w-4" />
-                        Notification Effects
-                    </h4>
-                    
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">Vibration</Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Vibrate device when notifications arrive
-                                </p>
-                            </div>
-                            <Switch
-                                checked={notificationPreferences.notification_vibration}
-                                onCheckedChange={(checked) => {
-                                    handleSettingsUpdate({ notification_vibration: checked });
-                                }}
-                                disabled={disabled}
-                            />
-                        </div>
-                    </div>
-                </div>
             </CardContent>
         </Card>
     );
 }
 
 // Appearance Card Component
-
 function AppearanceCard() {
     return (
         <Card>
@@ -470,7 +334,6 @@ function AppearanceCard() {
 }
 
 // Install Button Card Component
-
 function InstallButtonCard() {
     return (
         <Card>
@@ -528,7 +391,7 @@ function ClearCacheCard() {
 
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction  onClick={clearCache}>
+                            <AlertDialogAction onClick={clearCache}>
                                 Clear cache
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -551,79 +414,32 @@ function VersionSection() {
 
 // Main Settings Component
 function Settings() {
-    const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences | null>(null);
+    const [summaryPreferences, setSummaryPreferences] = useState<SummaryNotificationPreferences | null>(null);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        loadNotificationPreferences();
+        loadPreferences();
     }, []);
 
-    const loadNotificationPreferences = async () => {
+    const loadPreferences = async () => {
         try {
             setLoading(true);
             setError(null);
-            const preferences = await SettingsApiService.getNotificationPreferences();
-            setNotificationPreferences(preferences);
-        } catch (error) {
+            const summary = await SettingsApiService.getSummaryNotificationPreferences();
+            setSummaryPreferences(summary);
+        } catch {
             setError("Failed to load notification preferences");
-            throw error;
         } finally {
             setLoading(false);
         }
     };
 
-    const updateNotificationPreferences = async (preferences: NotificationPreferences) => {
-        if (!notificationPreferences) return;
-
-        setNotificationPreferences(preferences);
-    };
-
-    const handleSaveSettings = async () => {
-        if (!notificationPreferences) return;
-
-        // Validate quiet hours if both are provided
-        if (notificationPreferences.quiet_hours_start && !notificationPreferences.quiet_hours_end) {
-            toast.error("Quiet hours end is required if start time is provided");
-            return;
-        }
-
-        if (notificationPreferences.quiet_hours_end && !notificationPreferences.quiet_hours_start) {
-            toast.error("Quiet hours start is required if end time is provided");
-            return;
-        }
-
-        if (notificationPreferences.quiet_hours_start && notificationPreferences.quiet_hours_end && 
-            notificationPreferences.quiet_hours_start >= notificationPreferences.quiet_hours_end) {
-            toast.error("Quiet hours start must be before end time");
-            return;
-        }
-        
-        try {
-            setSaving(true);
-            setError(null);
-
-            const updatedPreferences = await SettingsApiService.updateNotificationPreferences(notificationPreferences);
-            
-            setNotificationPreferences(updatedPreferences);
-
-            toast.success("Settings saved successfully");
-        } catch (error) {
-            setError("Failed to save settings");
-            toast.error("Failed to save settings");
-            throw error;
-        } finally {
-            setSaving(false);
-        }
-    };
-
     const handleLogout = async () => {
         try {
-            window.location.href = import.meta.env.VITE_LOGOUT_URL
-        } catch (error) {
+            window.location.href = import.meta.env.VITE_LOGOUT_URL;
+        } catch {
             toast.error("Failed to logout");
-            throw error;
         }
     };
 
@@ -631,34 +447,33 @@ function Settings() {
         return <LoadingSkeleton />;
     }
 
-    if (!notificationPreferences) {
+    if (!summaryPreferences) {
         return <ErrorState error={error || "Failed to load notification preferences"} />;
     }
 
     return (
-        <TooltipProvider>
-            <SettingsHeader handleSaveSettings={handleSaveSettings} />
+        <>
+            <SettingsHeader />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-6">
                     <InstallButtonCard />
                     <AppearanceCard />
-                    <NotificationToggleCard disabled={saving} />
-                    <AccountCard onLogout={handleLogout} disabled={saving} />
+                    <NotificationToggleCard />
+                    <AccountCard onLogout={handleLogout} />
                 </div>
 
                 <div className="space-y-6">
-                    <NotificationPreferencesCard
-                        notificationPreferences={notificationPreferences}
-                        setNotificationPreferences={updateNotificationPreferences}
-                        disabled={saving}
+                    <PushNotificationPreferencesCard />
+                    <SummaryNotificationPreferencesCard
+                        summaryPreferences={summaryPreferences}
+                        setSummaryPreferences={setSummaryPreferences}
                     />
-
                     <ClearCacheCard />
                 </div>
             </div>
             <VersionSection />
-        </TooltipProvider>
+        </>
     );
 }
 

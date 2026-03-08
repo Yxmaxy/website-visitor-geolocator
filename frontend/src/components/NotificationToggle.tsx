@@ -21,15 +21,14 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ disabled = fals
 
     const pushService = new PushSubscriptionHelper({
         baseUrl: import.meta.env.VITE_NOTIFICATIONS_URL,
-        appName: import.meta.env.VITE_NOTIFICATIONS_APP_NAME,
         vapidPublicKey: import.meta.env.VITE_NOTIFICATIONS_VAPID_PUBLIC_KEY,
+        appName: "website_visitor_geolocator",
         serverRequestParameters: {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCookie("csrftoken") ?? "",
             },
-
         },
     });
 

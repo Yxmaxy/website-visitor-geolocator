@@ -41,7 +41,7 @@
     "tailwindcss": "^4.1.10",
     "zod": "^3.25.67",
     "django-session-api": "git+ssh://git@github.com:Yxmaxy/django-javascript-session-api.git#v1.1.0",
-    "django-simple-notifications": "git+ssh://git@github.com:Yxmaxy/django-simple-notifications.git#v1.0.0"
+    "django-simple-notifications": "git+ssh://git@github.com:Yxmaxy/django-simple-notifications.git#v2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

@@ -13,7 +13,13 @@ It consists of two main parts:
 
 ## Setup
 
-1. Run `./generate-env.sh` to generate the `.env` files for both the backend and the frontend.
+1. Copy the `.env.example` files to `.env` and `frontend/.env.example` to `frontend/.env` and fill in the necessary values.
+    ```
+    cp .env.example .env
+    cp frontend/.env.example frontend/.env
+    ```
+2. Generate VAPID keys for push notifications from: https://tools.reactpwa.com/vapid
+3. Copy the VAPID keys to the `.env` and `frontend/.env` files amd update other values as needed.
 
 ### Backend
 
