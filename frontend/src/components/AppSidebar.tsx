@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router";
 
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar.tsx"
 
-import { GlobeIcon, GaugeIcon, SettingsIcon, BarChart3Icon } from "lucide-react";
+import { GlobeIcon, GaugeIcon, SettingsIcon, BarChart3Icon, UsersIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile"
 
 function AppSidebar() {
@@ -50,6 +50,15 @@ function AppSidebar() {
                             <Link to="/statistics">
                                 <BarChart3Icon className="mr-1" />
                                 <span>Statistics</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+
+                    <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={location.pathname === "/visitors"} onClick={handleLinkClick}>
+                            <Link to="/visitors">
+                                <UsersIcon className="mr-1" />
+                                <span>Visitors</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

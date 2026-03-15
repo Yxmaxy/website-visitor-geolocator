@@ -40,6 +40,7 @@ class VisitorNotificationService:
                     body=f"New visitor on {visitor.domain} from {visitor.location_description}",
                     icon="/logo.svg",
                     badge="/logo.svg",
+                    data={"url": f"/visitors?ip={visitor.ip_address}"},
                 )
 
         except Exception as e:  # pylint: disable=broad-exception-caught

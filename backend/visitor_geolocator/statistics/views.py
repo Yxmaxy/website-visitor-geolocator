@@ -30,13 +30,14 @@ from visitor_geolocator.frontend.permissions import (
 class StatisticsMixin:
     statistics_serializer_class = StatisticsSerializer
 
-    def get_statistic_parameters(self) -> tuple[list[Domain], Optional[datetime], Optional[datetime]]:
+    def get_statistic_parameters(self) -> tuple[list[Domain], Optional[datetime], Optional[datetime], Optional[str]]:
         self.statistics_serializer = self.statistics_serializer_class(data=self.request.query_params)
         self.statistics_serializer.is_valid(raise_exception=True)
 
         domain_id = self.statistics_serializer.validated_data.get("domain_id")
         from_date = self.statistics_serializer.validated_data.get("from_date")
         to_date = self.statistics_serializer.validated_data.get("to_date")
+        ip_address = self.statistics_serializer.validated_data.get("ip_address")
 
         wvg_user = UserService.get_wvg_user(self.request.user)
         domains = DomainService.get_owner_domains(wvg_user)
@@ -44,7 +45,7 @@ class StatisticsMixin:
             domains = domains.filter(id=domain_id)
 
         domains = domains.order_by("id")
-        return domains, from_date, to_date
+        return domains, from_date, to_date, ip_address
 
 
 class AreaGeometriesAPIView(APIView):
@@ -80,7 +81,7 @@ class AreaStatisticsAPIView(StatisticsMixin, ListAPIView):
     pagination_class = StatisticsPagination
 
     def get_queryset(self):
-        domains, from_date, to_date = self.get_statistic_parameters()
+        domains, from_date, to_date, _ip_address = self.get_statistic_parameters()
         level: int = self.statistics_serializer.validated_data.get("level", LevelChoices.COUNTRY)
 
         return StatisticsService.get_visitors_by_area(domains, from_date, to_date, level)
@@ -97,8 +98,8 @@ class VisitorListAPIView(StatisticsMixin, ListAPIView):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        domains, from_date, to_date = self.get_statistic_parameters()
-        return StatisticsService.get_visitors(domains, from_date, to_date)
+        domains, from_date, to_date, ip_address = self.get_statistic_parameters()
+        return StatisticsService.get_visitors(domains, from_date, to_date, ip_address)
 
 
 class VisitorCountAPIView(StatisticsMixin, ListAPIView):
@@ -109,8 +110,8 @@ class VisitorCountAPIView(StatisticsMixin, ListAPIView):
 
     def get_queryset(self):
         """Get visitor count grouped by date"""
-        domains, from_date, to_date = self.get_statistic_parameters()
-        return StatisticsService.get_visitors_by_date(domains, from_date, to_date)
+        domains, from_date, to_date, ip_address = self.get_statistic_parameters()
+        return StatisticsService.get_visitors_by_date(domains, from_date, to_date, ip_address)
 
 
 class UserAgentDistributionAPIView(StatisticsMixin, ListAPIView):
@@ -122,5 +123,5 @@ class UserAgentDistributionAPIView(StatisticsMixin, ListAPIView):
 
     def get_queryset(self):
         """Get user agent distribution"""
-        domains, from_date, to_date = self.get_statistic_parameters()
+        domains, from_date, to_date, _ip_address = self.get_statistic_parameters()
         return StatisticsService.get_user_agent_distribution(domains, from_date, to_date)

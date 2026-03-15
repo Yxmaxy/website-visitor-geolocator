@@ -48,29 +48,20 @@ self.addEventListener("push", (event) => {
     serviceWorkerPushHandler(self.registration, event);
 });
 
-// // Notification click event
-// self.addEventListener("notificationclick", (event) => {
-//     console.log("Notification clicked:", event);
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
 
-//     event.notification.close();
+    const url = event.notification.data?.url || "/";
 
-//     if (event.action === "view") {
-//         // Open the dashboard
-//         event.waitUntil(
-//             clients.openWindow("/dashboard")
-//         );
-//     } else if (event.action === "dismiss") {
-//         // Just close the notification
-//         event.notification.close();
-//     } else {
-//         // Default action - open the main page
-//         event.waitUntil(
-//             clients.openWindow("/")
-//         );
-//     }
-// });
-
-// // Notification close event
-// self.addEventListener("notificationclose", (event) => {
-//     console.log("Notification closed:", event);
-// });
+    event.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+            for (const client of windowClients) {
+                if (client.url.includes(self.location.origin) && "focus" in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+            return clients.openWindow(url);
+        })
+    );
+});

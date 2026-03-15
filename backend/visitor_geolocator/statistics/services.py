@@ -13,7 +13,7 @@ class StatisticsService:
     """Service class for generating visitor statistics"""
 
     @staticmethod
-    def get_visitors(domains: list[Domain], from_date: datetime = None, to_date: datetime = None):
+    def get_visitors(domains: list[Domain], from_date: datetime = None, to_date: datetime = None, ip_address: str = None):
         """
         Get domain visitors limited by days
         """
@@ -27,6 +27,9 @@ class StatisticsService:
 
         if date_filters:
             queryset = queryset.filter(**date_filters)
+
+        if ip_address:
+            queryset = queryset.filter(ip_address=ip_address)
 
         return queryset
 
@@ -96,12 +99,12 @@ class StatisticsService:
         return sorted(distribution, key=lambda x: x["count"], reverse=True)
 
     @staticmethod
-    def get_visitors_by_date(domains: list[Domain], from_date: datetime = None, to_date: datetime = None):
+    def get_visitors_by_date(domains: list[Domain], from_date: datetime = None, to_date: datetime = None, ip_address: str = None):
         """
         Get visitor count grouped by date
         Returns list of dicts with 'date' and 'count' keys, only for dates that have data
         """
-        visitors = StatisticsService.get_visitors(domains, from_date, to_date)
+        visitors = StatisticsService.get_visitors(domains, from_date, to_date, ip_address)
 
         date_stats = (
             visitors.annotate(date=TruncDate("created_at"))

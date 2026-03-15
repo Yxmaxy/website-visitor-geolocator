@@ -7,29 +7,42 @@ import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useScrollbarHeight } from "@/hooks/use-scrollbar-height"
 
 import { LevelChoices, type PaginatedResponse, type PaginatedStatisticsParameters } from "@/services/api/apiStatistics";
 
 
 export interface StatisticsTableProps extends PaginatedStatisticsParameters {
     preloadedPages: number;
+    hideColumns?: string[];
+    onRowClick?: (row: any) => void;
 }
 
 interface TableProps<T> extends StatisticsTableProps {
     columns: ColumnDef<T>[];
     dataRetriever: (options: PaginatedStatisticsParameters) => Promise<PaginatedResponse<T>>;
+    onRowClick?: (row: T) => void;
 }
 
 function StatiststicsTable<T>({
-    columns,
+    columns: allColumns,
     dataRetriever,
     domainId = undefined,
     fromDate = undefined,
     toDate = undefined,
+    ipAddress = undefined,
     level = LevelChoices.COUNTRY,
     pageSize = 5,
     preloadedPages = 1,
+    hideColumns = [],
+    onRowClick,
 }: TableProps<T>) {
+    const columns = useMemo(
+        () => hideColumns.length > 0
+            ? allColumns.filter(col => !hideColumns.includes((col as any).accessorKey))
+            : allColumns,
+        [allColumns, hideColumns]
+    );
     const isMobile = useIsMobile();
 
     const [sorting, setSorting] = useState<SortingState>([])
@@ -64,6 +77,7 @@ function StatiststicsTable<T>({
             domainId,
             fromDate,
             toDate,
+            ipAddress,
             level,
             page: (backendPage / pagesToPreload) + 1,
             pageSize: pageSize * pagesToPreload,
@@ -131,10 +145,11 @@ function StatiststicsTable<T>({
     })
 
     const rowHeight = isMobile ? 36 : 51;
+    const { ref: containerRef, scrollbarHeight } = useScrollbarHeight<HTMLDivElement>([data, columns]);
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border" style={{ minHeight: `${(pageSize + 1) * rowHeight}px` }}>
+            <div ref={containerRef} className="rounded-md border overflow-y-hidden overflow-x-auto" style={{ height: `${(pageSize + 1) * (rowHeight + 2) + scrollbarHeight}px` }}>
                 <Table>
                     {/* Table Header */}
                     <TableHeader>
@@ -180,8 +195,8 @@ function StatiststicsTable<T>({
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    // onClick={() => handleRowClick(row.getValue("ip_address") as string)}
-                                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                                    onClick={() => onRowClick?.(row.original)}
+                                    className={`${onRowClick ? "cursor-pointer" : ""} hover:bg-muted/50 transition-colors`}
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>

@@ -14,6 +14,7 @@ const Dashboard = lazy(() => import("@/components/pages/Dashboard.tsx"))
 const Domains = lazy(() => import("@/components/pages/Domains.tsx"))
 const Statistics = lazy(() => import("@/components/pages/Statistics.tsx"))
 const Settings = lazy(() => import("@/components/pages/Settings.tsx"))
+const Visitors = lazy(() => import("@/components/pages/Visitors.tsx"))
 
 import "./styles/index.css"
 
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
                                     <Route path="/domains" element={<Domains />} />
                                     <Route path="/statistics" element={<Statistics />} />
                                     <Route path="/settings" element={<Settings />} />
+                                    <Route path="/visitors" element={<Visitors />} />
                                 </Routes>
                             </Suspense>
                         </div>

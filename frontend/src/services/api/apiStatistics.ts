@@ -24,6 +24,7 @@ export interface PaginatedStatisticsParameters extends StatisticsParameters {
     page?: number,
     pageSize?: number,
     ordering?: string,
+    ipAddress?: string,
 };
 
 export interface PaginatedResponse<T> {
@@ -70,7 +71,9 @@ class StatisticsApiService {
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null && typeof value !== "undefined") {
                 const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-                searchParams.append(snakeKey, value?.toString() ?? "");
+                const isDateKey = snakeKey === "from_date" || snakeKey === "to_date";
+                const stringValue = isDateKey ? value.toString().split("T")[0] : (value?.toString() ?? "");
+                searchParams.append(snakeKey, stringValue);
             }
         }
         return searchParams.toString();
@@ -110,7 +113,7 @@ class StatisticsApiService {
         return api.get<PaginatedResponse<UserAgentDistribution>>(`/statistics/user-agents/?${queryString}`);
     }
 
-    static async getVisitorCountByDate(options: StatisticsParameters): Promise<VisitorCountByDate[]> {
+    static async getVisitorCountByDate(options: PaginatedStatisticsParameters): Promise<VisitorCountByDate[]> {
         const queryString = StatisticsApiService.buildQueryString(options);
         return api.get<VisitorCountByDate[]>(`/statistics/visitor/count/?${queryString}`);
     }
