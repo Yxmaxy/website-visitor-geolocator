@@ -37,4 +37,22 @@ export const columns = (level: LevelChoices = LevelChoices.COUNTRY): ColumnDef<A
             );
         },
     },
+    {
+        id: "percentage",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Percentage" />
+        ),
+        cell: ({ row, table }) => {
+            const count = row.getValue("visitor_count") as number;
+            const total = table.getCoreRowModel().rows.reduce(
+                (sum, r) => sum + (r.getValue("visitor_count") as number), 0
+            );
+            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+            return (
+                <div className="font-medium text-muted-foreground">
+                    {percentage}%
+                </div>
+            );
+        },
+    },
 ]

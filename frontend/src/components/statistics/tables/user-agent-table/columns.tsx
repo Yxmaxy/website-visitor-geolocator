@@ -34,4 +34,22 @@ export const columns: ColumnDef<UserAgentDistribution>[] = [
             );
         },
     },
+    {
+        id: "percentage",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Percentage" />
+        ),
+        cell: ({ row, table }) => {
+            const count = row.getValue("count") as number;
+            const total = table.getCoreRowModel().rows.reduce(
+                (sum, r) => sum + (r.getValue("count") as number), 0
+            );
+            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+            return (
+                <div className="font-medium text-muted-foreground">
+                    {percentage}%
+                </div>
+            );
+        },
+    },
 ]
