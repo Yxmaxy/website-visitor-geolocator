@@ -59,6 +59,14 @@ class VisitorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     domain = serializers.ReadOnlyField(source="domain.domain")
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
+    def get_latitude(self, obj):
+        return obj.location.y if obj.location else None
+
+    def get_longitude(self, obj):
+        return obj.location.x if obj.location else None
 
 
 class UserAgentDistributionSerializer(serializers.Serializer):

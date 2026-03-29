@@ -65,6 +65,8 @@ export interface Visitor {
     user_agent_parsed: UserAgentParsed | null;
     created_at: string;
     domain: string;
+    latitude: number | null;
+    longitude: number | null;
 }
 
 export interface UserAgentDistribution {
