@@ -18,6 +18,7 @@ from visitor_geolocator.statistics.serializers import (
     AreaStatisticsResponseSerializer,
     StatisticsSerializer,
     UserAgentDistributionSerializer,
+    OperatingSystemDistributionSerializer,
     VisitorSerializer,
     VisitorCountByDateSerializer,
 )
@@ -125,3 +126,16 @@ class UserAgentDistributionAPIView(StatisticsMixin, ListAPIView):
         """Get user agent distribution"""
         domains, from_date, to_date, _ip_address = self.get_statistic_parameters()
         return StatisticsService.get_user_agent_distribution(domains, from_date, to_date)
+
+
+class OperatingSystemDistributionAPIView(StatisticsMixin, ListAPIView):
+    """API view for operating system distribution"""
+
+    permission_classes = [IsAuthenticated, HasWebsiteVisitorGeolocatorPermission]
+    serializer_class = OperatingSystemDistributionSerializer
+    pagination_class = StatisticsPagination
+
+    def get_queryset(self):
+        """Get operating system distribution"""
+        domains, from_date, to_date, _ip_address = self.get_statistic_parameters()
+        return StatisticsService.get_operating_system_distribution(domains, from_date, to_date)

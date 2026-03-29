@@ -1,17 +1,15 @@
-import { useState, useEffect } from "react";
-import { MapPin, Globe, Clock, Calendar as CalendarIcon, Monitor } from "lucide-react";
+import { MapPin, Globe, Clock, Calendar as CalendarIcon, Monitor, Smartphone, Laptop, Bot, Tablet } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import VisitorDataTable from "@/components/statistics/tables/visitor-table/VisitorTable";
-import StatisticsApiService, { type Visitor } from "@/services/api/apiStatistics";
+import type { Visitor } from "@/services/api/apiStatistics";
 
 interface IPDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    ipAddress: string;
+    visitor: Visitor;
     domainId?: number | null;
 }
 
@@ -27,34 +25,14 @@ function MetadataItem({ icon: Icon, label, value }: { icon: React.ElementType; l
     );
 }
 
-export function IPDetailsModal({ isOpen, onClose, ipAddress, domainId }: IPDetailsModalProps) {
-    const [metadata, setMetadata] = useState<Visitor | null>(null);
-    const [metadataLoading, setMetadataLoading] = useState(true);
-
-    useEffect(() => {
-        if (!isOpen || !ipAddress) return;
-
-        setMetadataLoading(true);
-
-        // Fetch most recent visit for metadata
-        StatisticsApiService.getLatestVisitors({
-            ipAddress,
-            domainId: domainId ?? undefined,
-            pageSize: 1,
-            page: 1,
-        }).then((data) => {
-            setMetadata(data.results[0] ?? null);
-            setMetadataLoading(false);
-        });
-    }, [isOpen, ipAddress, domainId]);
-
+export function IPDetailsModal({ isOpen, onClose, visitor, domainId }: IPDetailsModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent aria-describedby={undefined} className="sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <MapPin className="h-5 w-5" />
-                        IP Address Details: {ipAddress}
+                        IP Address Details: {visitor.ip_address}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -62,41 +40,46 @@ export function IPDetailsModal({ isOpen, onClose, ipAddress, domainId }: IPDetai
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-lg">Visitor Info</CardTitle>
-                        <CardDescription>Latest known information</CardDescription>
+                        <CardDescription>Information for this visit</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {metadataLoading ? (
-                            <div className="grid grid-cols-2 gap-4">
-                                {Array.from({ length: 4 }).map((_, i) => (
-                                    <div key={i} className="flex items-start gap-2">
-                                        <Skeleton className="h-4 w-4 mt-0.5" />
-                                        <div className="space-y-1">
-                                            <Skeleton className="h-3 w-16" />
-                                            <Skeleton className="h-4 w-32" />
-                                        </div>
-                                    </div>
-                                ))}
-                                <div className="col-span-2 flex items-start gap-2">
-                                    <Skeleton className="h-4 w-4 mt-0.5" />
-                                    <div className="space-y-1">
-                                        <Skeleton className="h-3 w-16" />
-                                        <Skeleton className="h-4 w-64" />
-                                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <MetadataItem icon={MapPin} label="IP address" value={visitor.ip_address} />
+                            <MetadataItem icon={Globe} label="Location" value={visitor.location_description} />
+                            <MetadataItem icon={Clock} label="Timezone" value={visitor.timezone || "Unknown"} />
+                            <MetadataItem icon={CalendarIcon} label="Visited At" value={new Date(visitor.created_at).toLocaleString()} />
+                            {visitor.user_agent_parsed ? (
+                                <>
+                                    <MetadataItem
+                                        icon={Globe}
+                                        label="Browser"
+                                        value={[visitor.user_agent_parsed.browser, visitor.user_agent_parsed.browser_version].filter(Boolean).join(" ")}
+                                    />
+                                    <MetadataItem
+                                        icon={Monitor}
+                                        label="Operating System"
+                                        value={[visitor.user_agent_parsed.os, visitor.user_agent_parsed.os_version].filter(Boolean).join(" ")}
+                                    />
+                                    <MetadataItem
+                                        icon={visitor.user_agent_parsed.is_bot ? Bot : visitor.user_agent_parsed.is_tablet ? Tablet : visitor.user_agent_parsed.is_mobile ? Smartphone : Laptop}
+                                        label="Device"
+                                        value={[
+                                            visitor.user_agent_parsed.device_family,
+                                            visitor.user_agent_parsed.device_brand,
+                                            visitor.user_agent_parsed.device_model !== visitor.user_agent_parsed.device_family ? visitor.user_agent_parsed.device_model : null,
+                                        ].filter(Boolean).join(" - ") || (
+                                            visitor.user_agent_parsed.is_bot ? "Bot" :
+                                            visitor.user_agent_parsed.is_tablet ? "Tablet" :
+                                            visitor.user_agent_parsed.is_mobile ? "Mobile" : "PC"
+                                        )}
+                                    />
+                                </>
+                            ) : (
+                                <div className="md:col-span-2">
+                                    <MetadataItem icon={Monitor} label="User Agent" value={visitor.user_agent} />
                                 </div>
-                            </div>
-                        ) : metadata ? (
-                            <div className="grid grid-cols-2 gap-4">
-                                <MetadataItem icon={Globe} label="Location" value={metadata.location_description} />
-                                <MetadataItem icon={Clock} label="Timezone" value={metadata.timezone || "Unknown"} />
-                                <MetadataItem icon={CalendarIcon} label="Last Seen" value={new Date(metadata.created_at).toLocaleString()} />
-                                <MetadataItem icon={MapPin} label="Domain" value={metadata.domain} />
-                                <div className="col-span-2">
-                                    <MetadataItem icon={Monitor} label="User Agent" value={metadata.user_agent} />
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No visit data available.</p>
-                        )}
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -111,7 +94,7 @@ export function IPDetailsModal({ isOpen, onClose, ipAddress, domainId }: IPDetai
                     <CardContent>
                         <VisitorDataTable
                             domainId={domainId ?? undefined}
-                            ipAddress={ipAddress}
+                            ipAddress={visitor.ip_address}
                             fromDate={new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()}
                             toDate={new Date().toISOString()}
                             pageSize={10}

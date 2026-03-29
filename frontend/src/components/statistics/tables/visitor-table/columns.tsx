@@ -39,21 +39,23 @@ export const columns: ColumnDef<Visitor>[] = [
         ),
         cell: ({ row }) => {
             const date = new Date(row.getValue("created_at"))
-            return <div className="max-w-[150px] truncate" title={date.toLocaleString()}>{date.toLocaleString()}</div>
+            return <div className="max-w-[150px] truncate">{date.toLocaleString()}</div>
         },
     },
     {
-        accessorKey: "user_agent",
+        id: "browser",
+        accessorFn: (row) => row.user_agent_parsed?.browser ?? "Unknown",
         header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="User Agent" />
+            <DataTableColumnHeader column={column} title="Browser" />
         ),
-        cell: ({ row }) => {
-            const userAgent = row.getValue("user_agent") as string
-            return (
-                <div className="max-w-[150px] truncate" title={userAgent}>
-                    {userAgent}
-                </div>
-            )
-        },
+        cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("browser")}</div>,
+    },
+    {
+        id: "os",
+        accessorFn: (row) => row.user_agent_parsed?.os ?? "Unknown",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Operating System" />
+        ),
+        cell: ({ row }) => <div className="max-w-[150px] truncate">{row.getValue("os")}</div>,
     },
 ]

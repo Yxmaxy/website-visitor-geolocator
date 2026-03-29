@@ -12,6 +12,8 @@ from django.contrib.gis.geos import Point
 from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet
 
+from user_agents import parse as parse_ua
+
 from visitor_geolocator.core.models import Domain, Visitor, WebsiteVisitorGeolocatorUser
 
 
@@ -88,7 +90,25 @@ class DomainService:
 
         # add request data
         visitor.domain = domain
-        visitor.user_agent = request.META.get("HTTP_USER_AGENT")
+        visitor.user_agent = request.META.get("HTTP_USER_AGENT", "")
+        try:
+            parsed = parse_ua(visitor.user_agent)
+            visitor.user_agent_parsed = {
+                "browser": parsed.browser.family,
+                "browser_version": parsed.browser.version_string,
+                "os": parsed.os.family,
+                "os_version": parsed.os.version_string,
+                "device_family": parsed.device.family,
+                "device_brand": parsed.device.brand,
+                "device_model": parsed.device.model,
+                "is_mobile": parsed.is_mobile,
+                "is_tablet": parsed.is_tablet,
+                "is_pc": parsed.is_pc,
+                "is_bot": parsed.is_bot,
+                "is_touch_capable": parsed.is_touch_capable,
+            }
+        except Exception:
+            visitor.user_agent_parsed = None
 
         if DomainService.is_visitor_in_cooldown(ip_address, domain):
             return None, True

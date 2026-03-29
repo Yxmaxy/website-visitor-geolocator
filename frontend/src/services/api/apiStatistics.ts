@@ -41,18 +41,39 @@ export interface AreaStatistics {
     visitor_count: number;
 }
 
+export interface UserAgentParsed {
+    browser: string;
+    browser_version: string;
+    os: string;
+    os_version: string;
+    device_family: string;
+    device_brand: string | null;
+    device_model: string | null;
+    is_mobile: boolean;
+    is_tablet: boolean;
+    is_pc: boolean;
+    is_bot: boolean;
+    is_touch_capable: boolean;
+}
+
 export interface Visitor {
     id: number;
     ip_address: string;
     location_description: string;
     timezone: string;
     user_agent: string;
+    user_agent_parsed: UserAgentParsed | null;
     created_at: string;
     domain: string;
 }
 
 export interface UserAgentDistribution {
     browser: string;
+    count: number;
+}
+
+export interface OperatingSystemDistribution {
+    operating_system: string;
     count: number;
 }
 
@@ -111,6 +132,11 @@ class StatisticsApiService {
     static async getUserAgentDistribution(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<UserAgentDistribution>> {
         const queryString = StatisticsApiService.buildQueryString(options);
         return api.get<PaginatedResponse<UserAgentDistribution>>(`/statistics/user-agents/?${queryString}`);
+    }
+
+    static async getOperatingSystemDistribution(options: PaginatedStatisticsParameters): Promise<PaginatedResponse<OperatingSystemDistribution>> {
+        const queryString = StatisticsApiService.buildQueryString(options);
+        return api.get<PaginatedResponse<OperatingSystemDistribution>>(`/statistics/operating-systems/?${queryString}`);
     }
 
     static async getVisitorCountByDate(options: PaginatedStatisticsParameters): Promise<VisitorCountByDate[]> {

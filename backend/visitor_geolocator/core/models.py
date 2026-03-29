@@ -98,6 +98,7 @@ class Visitor(models.Model):
     timezone = models.CharField(max_length=255)
 
     user_agent = models.CharField(max_length=510)
+    user_agent_parsed = models.JSONField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

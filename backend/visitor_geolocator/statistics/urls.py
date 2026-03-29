@@ -24,4 +24,9 @@ urlpatterns = [
         views.UserAgentDistributionAPIView.as_view(),
         name="user_agent_distribution_api",
     ),
+    path(
+        "operating-systems/",
+        views.OperatingSystemDistributionAPIView.as_view(),
+        name="operating_system_distribution_api",
+    ),
 ]

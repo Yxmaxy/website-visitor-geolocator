@@ -22,18 +22,27 @@ export default function VisitorTable({
     initialSelectedIp,
     disableRowClick,
 }: VisitorTableProps) {
-    const [selectedIp, setSelectedIp] = useState<string | null>(null);
+    const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         if (initialSelectedIp) {
-            setSelectedIp(initialSelectedIp);
-            setIsModalOpen(true);
+            StatisticsApiService.getLatestVisitors({
+                ipAddress: initialSelectedIp,
+                domainId: domainId ?? undefined,
+                pageSize: 1,
+                page: 1,
+            }).then((data) => {
+                if (data.results[0]) {
+                    setSelectedVisitor(data.results[0]);
+                    setIsModalOpen(true);
+                }
+            });
         }
     }, [initialSelectedIp]);
 
     const handleRowClick = (row: Visitor) => {
-        setSelectedIp(row.ip_address);
+        setSelectedVisitor(row);
         setIsModalOpen(true);
     };
 
@@ -51,14 +60,14 @@ export default function VisitorTable({
                 hideColumns={hideColumns}
                 onRowClick={disableRowClick ? undefined : handleRowClick}
             />
-            {selectedIp && (
+            {selectedVisitor && (
                 <IPDetailsModal
                     isOpen={isModalOpen}
                     onClose={() => {
                         setIsModalOpen(false);
-                        setSelectedIp(null);
+                        setSelectedVisitor(null);
                     }}
-                    ipAddress={selectedIp}
+                    visitor={selectedVisitor}
                     domainId={domainId ?? null}
                 />
             )}

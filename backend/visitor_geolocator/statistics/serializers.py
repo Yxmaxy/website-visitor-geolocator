@@ -68,6 +68,13 @@ class UserAgentDistributionSerializer(serializers.Serializer):
     count = serializers.IntegerField()
 
 
+class OperatingSystemDistributionSerializer(serializers.Serializer):
+    """Serializer for operating system distribution response"""
+
+    operating_system = serializers.CharField()
+    count = serializers.IntegerField()
+
+
 class VisitorCountByDateSerializer(serializers.Serializer):
     """Serializer for visitor count by date response"""
 

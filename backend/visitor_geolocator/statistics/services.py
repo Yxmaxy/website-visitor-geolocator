@@ -1,7 +1,6 @@
-import re
 from datetime import datetime
 
-from django.utils import timezone
+from django.db import models
 from django.db.models import Count, Subquery, OuterRef
 from django.db.models.functions import TruncDate
 
@@ -65,38 +64,36 @@ class StatisticsService:
     @staticmethod
     def get_user_agent_distribution(domains: list[Domain], from_date: datetime = None, to_date: datetime = None):
         """
-        Get user agent distribution using regex patterns
+        Get user agent distribution from parsed user agent data
         """
         queryset = StatisticsService.get_visitors(domains, from_date, to_date)
 
-        browser_patterns = {
-            "Chrome": r"Chrome/[0-9.]+",
-            "Safari": r"Safari/[0-9.]+(?!.*Chrome)",
-            "Firefox": r"Firefox/[0-9.]+",
-            "Edge": r"Edge/[0-9.]+",
-            "Opera": r"Opera/[0-9.]+",
-            "Internet Explorer": r"MSIE [0-9.]+|Trident/[0-9.]+",
-        }
+        distribution = (
+            queryset
+            .filter(user_agent_parsed__isnull=False)
+            .values(browser=models.F("user_agent_parsed__browser"))
+            .annotate(count=Count("id"))
+            .order_by("-count")
+        )
 
-        browser_counts = {browser: 0 for browser in browser_patterns}
-        browser_counts["Other"] = 0
+        return list(distribution)
 
-        for visitor in queryset:
-            user_agent = visitor.user_agent
-            for browser, pattern in browser_patterns.items():
-                if re.search(pattern, user_agent, re.IGNORECASE):
-                    browser_counts[browser] += 1
-                    break
-            else:
-                browser_counts["Other"] += 1
+    @staticmethod
+    def get_operating_system_distribution(domains: list[Domain], from_date: datetime = None, to_date: datetime = None):
+        """
+        Get operating system distribution from parsed user agent data
+        """
+        queryset = StatisticsService.get_visitors(domains, from_date, to_date)
 
-        distribution = [
-            {"browser": browser, "count": count}
-            for browser, count in browser_counts.items()
-            if count > 0
-        ]
+        distribution = (
+            queryset
+            .filter(user_agent_parsed__isnull=False)
+            .values(operating_system=models.F("user_agent_parsed__os"))
+            .annotate(count=Count("id"))
+            .order_by("-count")
+        )
 
-        return sorted(distribution, key=lambda x: x["count"], reverse=True)
+        return list(distribution)
 
     @staticmethod
     def get_visitors_by_date(domains: list[Domain], from_date: datetime = None, to_date: datetime = None, ip_address: str = None):

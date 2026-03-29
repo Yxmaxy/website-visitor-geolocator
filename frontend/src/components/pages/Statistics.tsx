@@ -9,11 +9,13 @@ import AreaMap, { AreaRegionSelect, type SelectableRegion } from "@/components/s
 import AreaTable from "@/components/statistics/tables/area-table/AreaTable";
 import UserAgentTable from "@/components/statistics/tables/user-agent-table/UserAgentTable";
 import UserAgentPieChart from "@/components/statistics/graphs/UserAgentPieChart";
+import OperatingSystemTable from "@/components/statistics/tables/operating-system-table/OperatingSystemTable";
+import OperatingSystemPieChart from "@/components/statistics/graphs/OperatingSystemPieChart";
 
 import { LevelChoices } from "@/services/api/apiStatistics";
 import type { Domain } from "@/services/api/apiDomain";
 
-import { BarChart3, Clock, Globe, MapPin, Monitor } from "lucide-react";
+import { BarChart3, Clock, Globe, Laptop, MapPin, Monitor } from "lucide-react";
 
 
 // Predefined continent regions for better zoom control
@@ -224,6 +226,50 @@ function Statistics() {
                         <CardContent>
                             <UserAgentTable
                                 key={`user-agent-table-${keySuffix}`}
+                                domainId={selectedDomain?.id}
+                                fromDate={fromDate}
+                                toDate={toDate}
+                                pageSize={3}
+                                preloadedPages={2}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Operating System Statistics */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 mb-2">
+                                <Laptop className="h-5 w-5" />
+                                Operating System Distribution
+                            </CardTitle>
+                            <CardDescription>
+                                Distribution of visitors by operating system
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <OperatingSystemPieChart
+                                key={`os-pie-chart-${keySuffix}`}
+                                domainId={selectedDomain?.id}
+                                fromDate={fromDate}
+                                toDate={toDate}
+                            />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 mb-2">
+                                <Laptop className="h-5 w-5" />
+                                Operating Systems
+                            </CardTitle>
+                            <CardDescription>
+                                Visitor statistics by operating system
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <OperatingSystemTable
+                                key={`os-table-${keySuffix}`}
                                 domainId={selectedDomain?.id}
                                 fromDate={fromDate}
                                 toDate={toDate}
