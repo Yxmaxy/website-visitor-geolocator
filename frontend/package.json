@@ -2,6 +2,7 @@
   "name": "website-visitor-geolocator",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@10.33.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -27,7 +28,7 @@
     "@types/leaflet": "^1.9.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "django-session-api": "git+ssh://git@github.com:Yxmaxy/django-javascript-session-api.git#v1.1.0",
+    "django-session-api": "git+ssh://git@github.com:Yxmaxy/django-javascript-session-api.git#v1.1.1",
     "django-simple-notifications": "git+ssh://git@github.com:Yxmaxy/django-simple-notifications.git#v2.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.518.0",
@@ -60,5 +61,12 @@
     "vite": "^6.3.5",
     "vite-plugin-pwa": "^1.0.3",
     "workbox-precaching": "^7.3.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "django-session-api",
+      "django-simple-notifications",
+      "esbuild"
+    ]
   }
 }

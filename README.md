@@ -38,10 +38,17 @@ To run the example app, do the following:
     conda activate visitor-geolocator
     conda install conda-forge::gdal
     ```
-3. Install dependencies
+3. Install dependencies (reads from `pyproject.toml`; the `dev` extra adds linting tools)
     ```
-    pip install -r requirements.txt
+    pip install -e ".[dev]"
     ```
+
+    Alternatively, use [uv](https://docs.astral.sh/uv/):
+    ```
+    uv sync --extra dev
+    ```
+
+    Dependency upper bounds live in `pyproject.toml`. Use `uv lock --upgrade` to re-resolve within bounds. The `tool.uv.exclude-newer` field quarantines packages published in the last ~14 days; bump it manually when needed.
 4. Initialize the database (we are using SQLite for this example)
     ```
     python manage.py migrate
