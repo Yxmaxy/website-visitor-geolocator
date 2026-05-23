@@ -47,8 +47,6 @@ To run the example app, do the following:
     ```
     uv sync --extra dev
     ```
-
-    Dependency upper bounds live in `pyproject.toml`. Use `uv lock --upgrade` to re-resolve within bounds. The `tool.uv.exclude-newer` field quarantines packages published in the last ~14 days; bump it manually when needed.
 4. Initialize the database (we are using SQLite for this example)
     ```
     python manage.py migrate
