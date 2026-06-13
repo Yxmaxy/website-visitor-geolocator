@@ -28,8 +28,8 @@
     "@types/leaflet": "^1.9.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "django-session-api": "git+ssh://git@github.com:Yxmaxy/django-javascript-session-api.git#v1.1.1",
-    "django-simple-notifications": "git+ssh://git@github.com:Yxmaxy/django-simple-notifications.git#v2.0.0",
+    "@yxmaxy/django-session-api": "^1.2.0",
+    "@yxmaxy/django-simple-notifications": "^2.0.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.518.0",
     "next-themes": "^0.4.6",
@@ -64,8 +64,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "django-session-api",
-      "django-simple-notifications",
       "esbuild"
     ]
   }

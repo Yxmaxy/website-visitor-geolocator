@@ -68,6 +68,9 @@ You can access the admin interface at `http://localhost:8000/admin/`.
 
 
 ### Frontend
+
+The frontend depends on the private `@yxmaxy/*` packages published to [GitHub Packages](https://docs.github.com/en/packages), which require authentication to install. Create a GitHub [personal access token](https://github.com/settings/tokens) with the `read:packages` scope and export it as `YXMAXY_NODE_TOKEN` (for example add `export YXMAXY_NODE_TOKEN=ghp_...` to your `~/.zshrc`). The committed `frontend/.npmrc` reads this variable from the environment; note that `pnpm`/`npm` do not read `.env` files for registry auth, so the token must be a real environment variable.
+
 1. Change into the `frontend/` directory
     ```
     cd frontend/

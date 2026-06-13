@@ -1,4 +1,4 @@
-import { createDjangoApi } from "django-session-api";
+import { createDjangoApi } from "@yxmaxy/django-session-api";
 
 import CacheService from "@/services/cache";
 import type { FeatureCollection } from "geojson";

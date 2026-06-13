@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 
-import { PushSubscriptionHelper } from "django-simple-notifications";
-import { getCookie } from "django-session-api";
+import { PushSubscriptionHelper } from "@yxmaxy/django-simple-notifications";
+import { getCookie } from "@yxmaxy/django-session-api";
 
 import { toast } from "sonner";
 
