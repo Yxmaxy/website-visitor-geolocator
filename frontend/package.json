@@ -2,7 +2,7 @@
   "name": "website-visitor-geolocator",
   "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -63,10 +63,5 @@
     "vite-plugin-pwa": "^1.0.3",
     "workbox-core": "^7.3.0",
     "workbox-precaching": "^7.3.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
   }
 }
