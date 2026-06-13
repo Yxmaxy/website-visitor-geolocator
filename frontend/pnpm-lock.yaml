@@ -53,18 +53,18 @@ importers:
       '@types/leaflet':
         specifier: ^1.9.19
         version: 1.9.21
+      '@yxmaxy/django-session-api':
+        specifier: ^1.2.0
+        version: 1.2.0
+      '@yxmaxy/django-simple-notifications':
+        specifier: ^2.0.1
+        version: 2.0.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      django-session-api:
-        specifier: git+ssh://git@github.com:Yxmaxy/django-javascript-session-api.git#v1.1.1
-        version: git+https://github.com/Yxmaxy/django-javascript-session-api.git#3e7169d622838e6193cbb573f878e3736ce71753
-      django-simple-notifications:
-        specifier: git+ssh://git@github.com:Yxmaxy/django-simple-notifications.git#v2.0.0
-        version: https://codeload.github.com/Yxmaxy/django-simple-notifications/tar.gz/8c76a535077d5404623b4ba3719cbcfba7eee27c
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -108,6 +108,9 @@ importers:
       '@eslint/js':
         specifier: ^9.25.0
         version: 9.39.4
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       '@types/node':
         specifier: ^24.0.3
         version: 24.12.3
@@ -150,6 +153,9 @@ importers:
       vite-plugin-pwa:
         specifier: ^1.0.3
         version: 1.3.0(vite@6.4.2(@types/node@24.12.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.47.1))(workbox-build@7.4.1(@types/babel__core@7.20.5))(workbox-window@7.4.1)
+      workbox-core:
+        specifier: ^7.3.0
+        version: 7.4.1
       workbox-precaching:
         specifier: ^7.3.0
         version: 7.4.1
@@ -1842,6 +1848,12 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
+  '@yxmaxy/django-session-api@1.2.0':
+    resolution: {integrity: sha512-Qx5g6+7okDXBPltrF2VNS4fxfGG2uCg3W7ymUlHKJAi+xO74VmrpsKWRgWfs6I0HGCrI8B42oCbsieMA19U/kg==, tarball: https://npm.pkg.github.com/download/@yxmaxy/django-session-api/1.2.0/c58d5320f18a26d0b3e2e95b4e131f1673cbe52b}
+
+  '@yxmaxy/django-simple-notifications@2.0.1':
+    resolution: {integrity: sha512-tDkRlCX8CTpCDMpQ+CU1/w+iDAw0QaCfTEG5IXvtgN+mkxK1+6oAtVHM0cn/8Cdq/rW7Pk5DlIckxVSzbRmVxQ==, tarball: https://npm.pkg.github.com/download/@yxmaxy/django-simple-notifications/2.0.1/3bc9f77215d6fee49dedc2b76977002fd4701cf4}
+
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -2094,14 +2106,6 @@ packages:
 
   detect-node-es@1.1.0:
     resolution: {integrity: sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==}
-
-  django-session-api@git+https://github.com/Yxmaxy/django-javascript-session-api.git#3e7169d622838e6193cbb573f878e3736ce71753:
-    resolution: {commit: 3e7169d622838e6193cbb573f878e3736ce71753, repo: https://github.com/Yxmaxy/django-javascript-session-api.git, type: git}
-    version: 1.1.1
-
-  django-simple-notifications@https://codeload.github.com/Yxmaxy/django-simple-notifications/tar.gz/8c76a535077d5404623b4ba3719cbcfba7eee27c:
-    resolution: {tarball: https://codeload.github.com/Yxmaxy/django-simple-notifications/tar.gz/8c76a535077d5404623b4ba3719cbcfba7eee27c}
-    version: 0.0.0
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -5095,6 +5099,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@yxmaxy/django-session-api@1.2.0': {}
+
+  '@yxmaxy/django-simple-notifications@2.0.1': {}
+
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
@@ -5346,10 +5354,6 @@ snapshots:
   detect-libc@2.1.2: {}
 
   detect-node-es@1.1.0: {}
-
-  django-session-api@git+https://github.com/Yxmaxy/django-javascript-session-api.git#3e7169d622838e6193cbb573f878e3736ce71753: {}
-
-  django-simple-notifications@https://codeload.github.com/Yxmaxy/django-simple-notifications/tar.gz/8c76a535077d5404623b4ba3719cbcfba7eee27c: {}
 
   dunder-proto@1.0.1:
     dependencies:
