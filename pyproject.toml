@@ -20,21 +20,21 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "Django>=4.2,<4.3",
-    "requests>=2.32,<3.0",
-    "django-ipware>=7.0,<8.0",
-    "django-cors-headers>=4.7,<5.0",
-    "python-dotenv>=1.1,<2.0",
-    "djangorestframework>=3.16,<4.0",
-    "user-agents>=2.2,<3.0",
+    "Django>=4.2",
+    "requests>=2.32",
+    "django-ipware>=7.0",
+    "django-cors-headers>=4.7",
+    "python-dotenv>=1.1",
+    "djangorestframework>=3.16",
+    "user-agents>=2.2",
     "django-simple-notifications @ git+https://github.com/Yxmaxy/django-simple-notifications.git@v2.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pylint>=3.3,<4.0",
-    "pylint-django>=2.6,<3.0",
-    "black>=25.1,<26.0",
+    "pylint>=3.3",
+    "pylint-django>=2.6",
+    "black>=25.1",
 ]
 
 [project.urls]
