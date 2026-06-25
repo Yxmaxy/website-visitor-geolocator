@@ -3,8 +3,6 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.contrib.gis.db import models as gis_models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 class WebsiteVisitorGeolocatorPermissions(models.Model):
@@ -29,21 +27,6 @@ class WebsiteVisitorGeolocatorUser(models.Model):
 
     def __str__(self):
         return str(self.user.email)
-
-
-# pylint: disable=unused-argument
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_website_visitor_geolocator_user(sender, instance, created, **kwargs):
-    if created:
-        website_visitor_geolocator_user = WebsiteVisitorGeolocatorUser.objects.create(
-            user=instance
-        )
-        # pylint: disable=import-outside-toplevel
-        from visitor_geolocator.notifications.models import NotificationPreferences
-
-        NotificationPreferences.objects.create(
-            website_visitor_geolocator_user=website_visitor_geolocator_user
-        )
 
 
 class Domain(models.Model):
